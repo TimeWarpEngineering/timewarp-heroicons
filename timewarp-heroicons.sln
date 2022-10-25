@@ -9,12 +9,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "timewarp-heroicons", "Sourc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70A5FCAE-A84E-4864-9208-5161D1CDA8D7}"
 	ProjectSection(SolutionItems) = preProject
-		publish.ps1 = publish.ps1
+		.gitignore = .gitignore
+		global.json = global.json
+		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample-app", "tests\sample-app\sample-app.csproj", "{D57105E0-02AA-4EA2-80C2-9D69B7C7AE8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "transform", "tools\transform\transform.csproj", "{D3B85D8E-7BDB-46BB-AE12-241D9A19EC92}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{DE94B50E-94EA-484A-9E25-BDF3D213F721}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\publish.ps1 = scripts\publish.ps1
+		scripts\transform.ps1 = scripts\transform.ps1
+		scripts\update.ps1 = scripts\update.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,6 +4,7 @@
   },
   "scripts": {
     "update": "pwsh -c ./scripts/update.ps1",
-    "transform": "pwsh -c ./scripts/transform.ps1"
+    "transform": "pwsh -c ./scripts/transform.ps1",
+    "publish": "pwsh -c ./scripts/publish.ps1",
   }
 }

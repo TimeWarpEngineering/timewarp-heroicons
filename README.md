@@ -27,14 +27,14 @@ If you like or are using this project please give it a star. Thank you!
 ## Usage
 
 ```razor
-<GithubIcon class="w-6 h-6"/>
-<BlazorIcon class="w-6 h-6 fill-[#512BD4]" />
-<TwitterIcon class="w-6 h-6 fill-blue-400" />
+<TimeWarp.HeroIcons.Mini.Solid.AcademicCapIcon class="w-10 h-10" />
+<TimeWarp.HeroIcons.Solid.AcademicCapIcon class="w-20 h-20" />
+<TimeWarp.HeroIcons.Outline.AcademicCapIcon class="w-20 h-20" />
 ```
 
 Outputs
 
-![](assets/20220731140539.png)  
+![](assets/sample-output.png)  
 
 ## Installation
 
