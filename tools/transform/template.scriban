@@ -1,0 +1,4 @@
+﻿@namespace {{the_namespace}}
+@inherits HeroIconBase
+
+{{svg}}

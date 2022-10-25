@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "run-script": {
+      "version": "0.5.0",
+      "commands": [
+        "r"
+      ]
+    },
+    "dotnet-cleanup": {
+      "version": "0.6.1",
+      "commands": [
+        "cleanup"
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "transform": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\git\\github\\tailwindlabs\\heroicons\\src C:\\git\\github\\TimeWarpEngineering\\timewarp-heroicons\\source\\timewarp-heroicons"
+    }
+  }
+}
