@@ -1,8 +1,7 @@
+namespace sample_app;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using sample_app;
-
-namespace sample_app;
 
 public class Program
 {
