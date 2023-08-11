@@ -22,5 +22,5 @@ jobs:
     - name: Set NuGet Key and Publish to NuGet
       run: |
        $Nuget_Key = "${{ secrets.PUBLISH_TO_NUGET_ORG }}"
-       ./publish.ps1
+       ./scripts/publish.ps1
       shell: pwsh # Use PowerShell Core
