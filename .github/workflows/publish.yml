@@ -19,8 +19,8 @@ jobs:
       with:
         dotnet-version: '6.0.x' # Use .NET 6
 
-    - name: Set NuGet Key
-      run: echo "Nuget_Key=${{ secrets.PUBLISH_TO_NUGET_ORG }}" >> $GITHUB_ENV
-
-    - name: Publish to NuGet
-      run: ./scripts/publish.ps1 # Use PowerShell Core
+    - name: Set NuGet Key and Publish to NuGet
+      run: |
+       $Nuget_Key = "${{ secrets.PUBLISH_TO_NUGET_ORG }}"
+       ./publish.ps1
+      shell: pwsh # Use PowerShell Core
