@@ -1,5 +1,9 @@
 # Releases
 
+## 2.0.18-update
+
+* Update to version 2.0.18
+
 ## 2.0.12-update.1
 
 * Changed from ComponentBase to IComponent ( Thanks @chan18 )
