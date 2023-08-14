@@ -19,8 +19,15 @@ jobs:
       with:
         dotnet-version: '6.0.x' # Use .NET 6
 
+    - name: Build and pack
+      run: |
+        dotnet pack -c Release --output ./artifacts
+      working-directory: ./
+
     - name: Set NuGet Key and Publish to NuGet
       run: |
        $Nuget_Key = "${{ secrets.PUBLISH_TO_NUGET_ORG }}"
-       ./scripts/publish.ps1
+       ./scripts/publish.ps1 -PackagePath ./artifacts
       shell: pwsh # Use PowerShell Core
+
+
