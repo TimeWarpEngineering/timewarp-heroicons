@@ -4,7 +4,7 @@ try {
     dotnet tool restore
     dotnet cleanup -y
     dotnet pack ./source/timewarp-heroicons/timewarp-heroicons.csproj -c Release --output packages
-    Push-Location ./source/timewarp-heroicons/packages
+    Push-Location ./packages
     dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $Nuget_Key    
     Pop-Location
 }
