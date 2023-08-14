@@ -22,7 +22,7 @@ jobs:
     - name: Build and pack
       run: |
         dotnet pack -c Release --output ./artifacts
-      working-directory: ./
+      working-directory: Source/timewarp-heroicons/timewarp-heroicons
 
     - name: Set NuGet Key and Publish to NuGet
       run: |
