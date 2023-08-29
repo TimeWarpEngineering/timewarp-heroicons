@@ -59,7 +59,7 @@ Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how
 
 ### Steps to publish NuGet package
 
-* [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroiconsicons) repo.
+* [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroicons) repo.
 * [ ] Set the PowerShell variable `$simple_icons` to the path where you cloned the simple-icons repo in the above step. (Add `$simple_icons = "<PATH where you stored the repp>"` to your profile)
 * [ ] Ensure your copy of the simple-icons repo is up to date by running (`update.ps1`).
 * [ ] Set the Version in `timewarp-simple-icons/source/timewarp-simple-icons/timewarp-simple-icons.csproj` to the same version that is in `simple-icons/package.json`.
