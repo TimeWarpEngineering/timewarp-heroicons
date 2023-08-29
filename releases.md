@@ -1,5 +1,9 @@
 # Releases
 
+## 2.0.19+2.0.18-update
+* Update transform script for removing unused attribute
+* Assigning color work on icon now
+
 ## 2.0.18-update
 
 * Update to version 2.0.18
