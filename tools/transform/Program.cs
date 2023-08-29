@@ -44,9 +44,13 @@ foreach (string? fullFileName in fullFileNames)
 string Transform(string fileContent, string componentName, int size, string theNamespace)
 {
     string search = $"<svg width=\"{size}\" height=\"{size}\" viewBox=\"0 0 {size} {size}\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">";
-    string replacement = $"<svg width=\"{size}\" height=\"{size}\" viewBox=\"0 0 {size} {size}\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" @attributes=Attributes>";
+    string replacement = $"<svg width=\"{size}\" height=\"{size}\" viewBox=\"0 0 {size} {size}\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"currentColor\" @attributes=Attributes>";
 
-    var svg = fileContent.Replace(search, replacement);
+    var svg = fileContent.Replace(search, replacement)
+        .Replace("fill=\"none\"", "")
+        .Replace("fill=\"#0F172A\"", "")
+        .Replace("stroke=\"#0F172A\"", "")
+        .Replace("fill-rule=\"evenodd\" clip-rule=\"evenodd\"", "stroke-linecap=\"round\" stroke-linejoin=\"round\"");
 
     var templateContent = File.ReadAllText("template.scriban");
     var template = Template.Parse(templateContent);
