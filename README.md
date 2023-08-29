@@ -67,8 +67,6 @@ Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how
 * [ ] Run the test app to make sure the icons render properly.
 * [ ] Update `releases.md`.
 * [ ] Commit and push the changes to GitHub.
-* [ ] Set the PowerShell variable `$Nuget_Key` value.
-* [ ] Publish to NuGet by running `publish.ps1`.
 * [ ] Tweet to let people know.
 
 ## Contact
