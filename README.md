@@ -61,7 +61,7 @@ Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how
 
 * [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroicons) repo.
 * [ ] Set the PowerShell variable `$heroicons` to the path where you cloned the heroicons repo in the above step. (Add `$heroicons = "<PATH where you stored the repp>"` to your profile)
-* [ ] Ensure your copy of the simple-icons repo is up to date by running (`update.ps1`).
+* [ ] Ensure your copy of the heroicons repo is up to date by running (`update.ps1`).
 * [ ] Set the Version in `timewarp-heroicons/source/timewarp-heroicons/timewarp-heroicons.csproj` to the same version that is in `heroicons/package.json`.
 * [ ] Transform the cloned [heroicons](https://github.com/tailwindlabs/heroicons) into razor files by running `transform.ps1` in scripts folder.
 * [ ] Run the test app to make sure the icons render properly.
