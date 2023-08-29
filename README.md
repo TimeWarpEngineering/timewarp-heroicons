@@ -59,16 +59,14 @@ Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how
 
 ### Steps to publish NuGet package
 
-* [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroiconsicons) repo.
-* [ ] Set the PowerShell variable `$simple_icons` to the path where you cloned the simple-icons repo in the above step. (Add `$simple_icons = "<PATH where you stored the repp>"` to your profile)
-* [ ] Ensure your copy of the simple-icons repo is up to date by running (`update.ps1`).
-* [ ] Set the Version in `timewarp-simple-icons/source/timewarp-simple-icons/timewarp-simple-icons.csproj` to the same version that is in `simple-icons/package.json`.
+* [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroicons) repo.
+* [ ] Set the PowerShell variable `$heroicons` to the path where you cloned the heroicons repo in the above step. (Add `$heroicons = "<PATH where you stored the repp>"` to your profile)
+* [ ] Ensure your copy of the heroicons repo is up to date by running (`update.ps1`).
+* [ ] Set the Version in `timewarp-heroicons/source/timewarp-heroicons/timewarp-heroicons.csproj` to the same version that is in `simple-icons/package.json`.
 * [ ] Transform the cloned [simple-icons](https://github.com/simple-icons/simple-icons) into razor files by running `transform.ps1`.
 * [ ] Run the test app to make sure the icons render properly.
 * [ ] Update `releases.md`.
 * [ ] Commit and push the changes to GitHub.
-* [ ] Set the PowerShell variable `$Nuget_Key` value.
-* [ ] Publish to NuGet by running `publish.ps1`.
 * [ ] Tweet to let people know.
 
 ## Contact

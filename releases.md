@@ -1,5 +1,10 @@
 # Releases
 
+## 2.0.19+2.0.18
+
+* Update to optimized version 2.0.18
+* Icon can now be use with colors
+
 ## 2.0.18-update
 
 * Update to version 2.0.18
