@@ -3,7 +3,7 @@ name: Publish to NuGet
 on:
   push:
     branches:
-      - main # Trigger on push to the main branch
+      - master
   workflow_dispatch: # Allow manual kick off
 
 jobs:
