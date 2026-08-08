@@ -15,7 +15,7 @@
 # timewarp-heroicons
 All the HeroIcons wrapped as Blazor components.
 
-![TimeWarp Logo](assets/Logo.png)
+![TimeWarp Logo](assets/brand-logo.png)
 
 All [heroicons](https://github.com/tailwindlabs/heroicons) wrapped as Blazor components.
 See and search all at https://heroicons.com/
