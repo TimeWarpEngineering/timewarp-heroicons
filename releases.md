@@ -1,5 +1,9 @@
 # Releases
 
+## 2.2.0
+
+* Update to heroicons version 2.2.0
+
 Versioning: NuGet identity **matches** [heroicons](https://github.com/tailwindlabs/heroicons)
 when we sync (`2.2.0` = heroicons 2.2.0). TW-only fixes without a new heroicons
 release use a prerelease suffix on that base (`2.2.0-tw.1`), not a disconnected

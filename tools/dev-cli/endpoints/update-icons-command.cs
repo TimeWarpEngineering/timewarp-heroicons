@@ -186,6 +186,17 @@ internal sealed class UpdateIconsCommand : ICommand<Unit>
         return false;
       }
 
+      // Drop prior generated size trees so removed upstream icons disappear and
+      // namespace/layout changes (e.g. new 16px Micro) do not leave stale duplicates.
+      foreach (string sizeDir in new[] { "16", "20", "24" })
+      {
+        string path = Path.Combine(outputPath, sizeDir);
+        if (Directory.Exists(path))
+        {
+          Directory.Delete(path, recursive: true);
+        }
+      }
+
       Terminal.WriteLine("\nRegenerating Blazor icon components...");
       int exitCode = await Shell.Builder("dotnet")
         .WithArguments("run", "--project", transformProject, "--", inputPath, outputPath)
@@ -215,7 +226,7 @@ internal sealed class UpdateIconsCommand : ICommand<Unit>
     private static void UpdateReleases(string repoRoot, string newVersion, string upstreamVersion)
     {
       string releasesPath = Path.Combine(repoRoot, "releases.md");
-      string newSection = $"## {newVersion}\n\n* Update to hero-icons version {upstreamVersion}\n\n";
+      string newSection = $"## {newVersion}\n\n* Update to heroicons version {upstreamVersion}\n\n";
 
       if (!File.Exists(releasesPath))
       {
@@ -223,15 +234,16 @@ internal sealed class UpdateIconsCommand : ICommand<Unit>
         return;
       }
 
-      string existing = File.ReadAllText(releasesPath);
-      const string heading = "# Releases\n\n";
+      string existing = File.ReadAllText(releasesPath).Replace("\r\n", "\n", StringComparison.Ordinal);
+      const string heading = "# Releases\n";
       if (existing.StartsWith(heading, StringComparison.Ordinal))
       {
-        File.WriteAllText(releasesPath, $"{heading}{newSection}{existing[heading.Length..]}");
+        string rest = existing[heading.Length..].TrimStart('\n');
+        File.WriteAllText(releasesPath, $"{heading}\n{newSection}{rest}");
         return;
       }
 
-      File.WriteAllText(releasesPath, $"{heading}{newSection}{existing}");
+      File.WriteAllText(releasesPath, $"# Releases\n\n{newSection}{existing}");
     }
 
     private async Task<bool> BuildAsync(string repoRoot, CancellationToken ct)
