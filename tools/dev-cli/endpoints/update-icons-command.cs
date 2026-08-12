@@ -2,8 +2,17 @@
 // Syncs Blazor icon components from upstream tailwindlabs/heroicons releases
 #endregion
 #region Design
-// Compares the pinned heroicons version in source/Directory.Build.props with the latest GitHub
-// release, regenerates components when stale, optionally commits/pushes and publishes to NuGet
+// Version policy (this package is NOT a normal independent TimeWarp line):
+//   - When we sync to heroicons X.Y.Z, NuGet identity MUST be X.Y.Z (match source).
+//   - TW-only fix without a new heroicons release: SemVer prerelease on that base,
+//     e.g. 2.2.0-tw.1 (historical: 2.0.12-update.1). Never invent a disconnected
+//     patch like 2.0.19 while still on heroicons 2.0.18.
+//   - Optional +metadata may record the pin (2.2.0-tw.1+2.2.0) but + alone cannot
+//     distinguish NuGet packages — only the identity before + ships to nuget.org.
+//
+// Flow: read props Version → extract upstream pin → compare to latest GitHub
+// heroicons release → if stale, clone optimized SVGs, transform to Razor, set
+// Version = upstream (clean match), update releases.md, build, optional push/publish.
 #endregion
 
 namespace DevCli.Commands;
@@ -102,23 +111,31 @@ internal sealed class UpdateIconsCommand : ICommand<Unit>
       return version;
     }
 
+    // Upstream pin from Version: prefer +metadata; else strip prerelease (2.2.0-tw.1 → 2.2.0).
     private static string ExtractUpstreamVersion(string version)
     {
       int plus = version.IndexOf('+');
-      return plus >= 0 ? version[(plus + 1)..] : version;
-    }
-
-    private static string BumpPackageVersion(string currentVersion, string upstreamVersion)
-    {
-      string packagePart = currentVersion.Split('+')[0];
-      string[] parts = packagePart.Split('.');
-      if (parts.Length < 3 || !int.TryParse(parts[^1], out int patch))
+      if (plus >= 0)
       {
-        return $"{upstreamVersion}+{upstreamVersion}";
+        return version[(plus + 1)..];
       }
 
-      parts[^1] = (patch + 1).ToString();
-      return $"{string.Join('.', parts)}+{upstreamVersion}";
+      // TW-only re-ship: 2.2.0-tw.1 / 2.0.12-update.1 still track base X.Y.Z
+      int dash = version.IndexOf('-');
+      if (dash >= 0)
+      {
+        return version[..dash];
+      }
+
+      return version;
+    }
+
+    // On icon sync, NuGet version = heroicons version (no patch++ drift).
+    // TW-only revisions are not produced here — hand-edit to e.g. 2.2.0-tw.1.
+    private static string BumpPackageVersion(string currentVersion, string upstreamVersion)
+    {
+      _ = currentVersion;
+      return upstreamVersion;
     }
 
     private static async Task<string> FetchLatestHeroiconsVersionAsync(CancellationToken ct)
@@ -298,7 +315,9 @@ internal sealed class UpdateIconsCommand : ICommand<Unit>
         .RunAsync(ct);
       if (exitCode != 0) return Fail(exitCode);
 
-      string packagePath = Path.Combine(artifactsDir, $"timewarp-heroicons.{version}.nupkg");
+      // Pack uses NuGet identity (metadata after + is not in the file name).
+      string nugetIdentity = version.Split('+')[0];
+      string packagePath = Path.Combine(artifactsDir, $"timewarp-heroicons.{nugetIdentity}.nupkg");
       if (!File.Exists(packagePath))
       {
         Terminal.WriteErrorLine($"Package not found: {packagePath}".Red());
