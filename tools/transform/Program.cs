@@ -15,67 +15,106 @@ string templatePath = ResolveTemplatePath();
 string templateContent = File.ReadAllText(templatePath);
 Template template = Template.Parse(templateContent);
 
-var fullFileNames = Directory.EnumerateFiles(heroIconPath, "*.*", SearchOption.AllDirectories);
-
 TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
 
-foreach (string? fullFileName in fullFileNames)
+foreach (string fullFileName in Directory.EnumerateFiles(heroIconPath, "*.*", SearchOption.AllDirectories))
 {
-    var relativePath = Path.GetRelativePath(heroIconPath, fullFileName);
-    relativePath = Path.GetDirectoryName(relativePath) ?? string.Empty;
-    string fullOutputPath = Path.Combine(outputPath, relativePath);
+  if (!string.Equals(Path.GetExtension(fullFileName), ".svg", StringComparison.OrdinalIgnoreCase))
+  {
+    continue;
+  }
 
-    string iconName = Path.GetFileNameWithoutExtension(fullFileName);
-    string iconExtension = Path.GetExtension(fullFileName);
-    if (iconExtension != ".svg") continue;
+  string relativeDir = Path.GetDirectoryName(Path.GetRelativePath(heroIconPath, fullFileName)) ?? string.Empty;
+  string normalizedDir = relativeDir.Replace('\\', '/');
+  string fullOutputPath = Path.Combine(outputPath, relativeDir);
 
-    char firstChar = iconName[0];
-    bool firstCharIsValid = char.IsLetter(firstChar) || firstChar == '_';
+  string iconName = Path.GetFileNameWithoutExtension(fullFileName);
+  string componentName = textInfo.ToTitleCase(iconName).Replace("-", string.Empty, StringComparison.Ordinal) + "Icon";
+  string componentFullFileName = Path.Combine(fullOutputPath, $"{componentName}.razor");
 
-    string componentName = firstCharIsValid ? iconName : $"_{iconName}";
-    componentName = textInfo.ToTitleCase(iconName).Replace("-", string.Empty);
-    string suffix = "Icon";
-    componentName = $"{componentName}{suffix}";
-    string componentFullFileName = Path.Combine(fullOutputPath, $"{componentName}.razor");
+  int size = ResolveSize(normalizedDir);
+  string kind = normalizedDir.Contains("solid", StringComparison.OrdinalIgnoreCase) ? "Solid" : "Outline";
+  string theNameSpace = ResolveNamespace(size, kind);
 
-    string? fileContent = File.ReadAllText(fullFileName);
-    int size = relativePath.Contains("20") ? 20 : 24;
-    string kind = relativePath.Contains("solid") ? "Solid" : "Outline";
-    string theNameSpace = size == 20 ? $"TimeWarp.HeroIcons.Mini.{kind}" : $"TimeWarp.HeroIcons.{kind}";
-    string content = Transform(fileContent, componentName, size, theNameSpace, template);
+  string fileContent = File.ReadAllText(fullFileName);
+  string content = Transform(fileContent, theNameSpace, template);
 
-    Directory.CreateDirectory(fullOutputPath);
-    File.WriteAllText(componentFullFileName, content);
+  Directory.CreateDirectory(fullOutputPath);
+  File.WriteAllText(componentFullFileName, content);
 }
+
+static int ResolveSize(string normalizedRelativeDir)
+{
+  // heroicons optimized layout: 16/solid, 20/solid, 24/solid|outline
+  if (normalizedRelativeDir.StartsWith("16/", StringComparison.Ordinal) ||
+      normalizedRelativeDir.Equals("16", StringComparison.Ordinal))
+  {
+    return 16;
+  }
+
+  if (normalizedRelativeDir.StartsWith("20/", StringComparison.Ordinal) ||
+      normalizedRelativeDir.Equals("20", StringComparison.Ordinal))
+  {
+    return 20;
+  }
+
+  return 24;
+}
+
+// 16 = Micro, 20 = Mini, 24 = default Solid/Outline (heroicons naming).
+static string ResolveNamespace(int size, string kind) => size switch
+{
+  16 => $"TimeWarp.HeroIcons.Micro.{kind}",
+  20 => $"TimeWarp.HeroIcons.Mini.{kind}",
+  _ => $"TimeWarp.HeroIcons.{kind}",
+};
 
 static string ResolveTemplatePath()
 {
-    string[] candidates =
-    [
-        Path.Combine(AppContext.BaseDirectory, "template.scriban"),
-        // Fallback when running from tools/transform source tree
-        Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "template.scriban")),
-        Path.Combine(Environment.CurrentDirectory, "template.scriban"),
-        Path.Combine(Environment.CurrentDirectory, "tools", "transform", "template.scriban"),
-    ];
+  string[] candidates =
+  [
+    Path.Combine(AppContext.BaseDirectory, "template.scriban"),
+    Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "template.scriban")),
+    Path.Combine(Environment.CurrentDirectory, "template.scriban"),
+    Path.Combine(Environment.CurrentDirectory, "tools", "transform", "template.scriban"),
+  ];
 
-    foreach (string candidate in candidates)
-    {
-        if (File.Exists(candidate)) return candidate;
-    }
+  foreach (string candidate in candidates)
+  {
+    if (File.Exists(candidate)) return candidate;
+  }
 
-    throw new FileNotFoundException(
-        "Could not find template.scriban. Expected it next to the transform binary (CopyToOutputDirectory) or under tools/transform/.",
-        "template.scriban");
+  throw new FileNotFoundException(
+    "Could not find template.scriban. Expected it next to the transform binary (CopyToOutputDirectory) or under tools/transform/.",
+    "template.scriban");
 }
 
-static string Transform(string fileContent, string componentName, int size, string theNamespace, Template template)
+static string Transform(string fileContent, string theNamespace, Template template)
 {
-    string search = $"<svg width=\"{size}\" height=\"{size}\" viewBox=\"0 0 {size} {size}\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">";
-    string replacement = $"<svg width=\"{size}\" height=\"{size}\" viewBox=\"0 0 {size} {size}\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" @attributes=Attributes>";
+  // Inject Blazor attribute splatting on the root <svg>. Upstream markup varies
+  // (width/height vs viewBox-only, fill none vs currentColor) across heroicons versions.
+  string svg = InjectAttributes(fileContent);
+  return template.Render(new { svg, theNamespace });
+}
 
-    var svg = fileContent.Replace(search, replacement);
+static string InjectAttributes(string svgMarkup)
+{
+  if (svgMarkup.Contains("@attributes", StringComparison.Ordinal))
+  {
+    return svgMarkup;
+  }
 
-    var componentContent = template.Render(new { svg, theNamespace });
-    return componentContent;
+  int svgOpen = svgMarkup.IndexOf("<svg", StringComparison.OrdinalIgnoreCase);
+  if (svgOpen < 0)
+  {
+    return svgMarkup;
+  }
+
+  int tagEnd = svgMarkup.IndexOf('>', svgOpen);
+  if (tagEnd < 0)
+  {
+    return svgMarkup;
+  }
+
+  return svgMarkup.Insert(tagEnd, " @attributes=Attributes");
 }
