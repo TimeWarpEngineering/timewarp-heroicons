@@ -57,7 +57,12 @@ Acceptance:
 
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session e4799561-1150-46f2-97a1-358f3c48d2fb, max-turns 500, Done — 2026-11-13T15:12:20Z
+- Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), body tw-implementation-review, session not reported, max-turns uncapped (review budget turn cap 80), effort 1, roster general, round 1, disposition clean — 2026-11-13T15:14:54Z
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 80), artifacts general.md, merged.md, disposition.md — 2026-11-13T15:15:22Z
 
+## Review
+
+- Round 1: Done
 ## Notes
 
 - Breaking change to a stable package → walk launched with `--no-merge` (global policy); merge
@@ -99,6 +104,13 @@ unzip -p source/timewarp-heroicons/bin/Release/timewarp-heroicons.2.2.0-tw.1.nup
 Expect: the grep prints nothing; build succeeds; the nuspec shows `<version>2.2.0-tw.1</version>`
 and exactly one `<group targetFramework="net11.0">` with Components.Web `11.0.0`; check-version
 reports 2.2.0-tw.1 as new.
+
+### Review
+
+- Round 1, roster general, effort 1. Disposition: **clean**. Final open count: 0.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 / 0 / 0; nit 0 / 0 / 0. No wontfix, no escalation.
+- The implementer restatement matches the original task. No misread.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
 
 ## Follow-ups
 
