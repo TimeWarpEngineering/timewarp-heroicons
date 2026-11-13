@@ -10,11 +10,11 @@
 
 ## Budget (by-diff)
 
-- Lines changed: 1731
-- Effort: 3
+- Lines changed: 152
+- Effort: 1
 - TCB hits: none
 - Roster axes: general
-- Turn cap: 200 (review budget). Harness did not pass `--max-turns`; session bound recorded as uncapped.
+- Turn cap: 80 (--max-turns; cursor uncapped)
 
 ## Ground rules
 
@@ -24,3 +24,11 @@
 - Address the diff and surrounding call sites; re-verify falsifiable claims against the repo
 - Prior rounds are immutable; new work goes in `round-(N+1)/`
 - Build, test, and audit stay on the implementer's recorded Results. One targeted command may check one suspected bug.
+
+## Round 2
+
+**Date:** 2026-11-13
+**Diff scope:** product delta `fde535bbbba19dd611d902eeba6496ea9de4aaac..35ebe3088a537c109e23dd280f2f98df09285665` (commit `35ebe30`). Files: `.github/workflows/workflow.yml`, `glossary.md`, `tools/dev-cli/endpoints/update-icons-command.cs`, `tools/dev-cli/endpoints/update-icons-lookups.cs`. Re-verify M1–M3. The header Diff scope and Effort above are round 1. The Budget block is this round.
+**Effort:** 1 (general only)
+**Reviewer roster:** general
+**Session IDs:** review harness did not supply a vendor session id (Grok 4.7, 2026-11-13). Bound turn cap 80; the harness did not pass `--max-turns`, so the session line records the cap as uncapped.

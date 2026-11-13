@@ -97,12 +97,18 @@ Acceptance criteria:
 - Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 200), artifacts general.md, merged.md — 2026-11-13T11:01:54Z
 - Implement-fix-2 (ganda task work, Claude Opus 5.5, 2026-11-13): fixed review round 1 M1–M3
   (sync step exit code, glossary "release pending", ahead-of-upstream message); gates re-run.
+- Review round 2 (ganda task work, general, Grok 4.7, 2026-11-13): effort 1, roster general.
+  Turn cap uncapped (review budget ladder 80; harness did not pass `--max-turns`). No vendor
+  session id. Restatement matches the task; no misread. Disposition clean.
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session
+  not reported, max-turns uncapped (no --max-turns flag; bound 80), artifacts
+  review/round-2/general.md, review/round-2/merged.md, review/disposition.md — 2026-11-13
 
 ## Review
 
 - Round 1: Blocked — open M1, M2, M3
 - Round 1 fix pass (implement-fix-2): M1, M2, M3 fixed; see Results "Review round 1 fixes".
-
+- Round 2: Done
 ## Notes
 
 - Current state: NuGet versions 1.0.0, 2.0.12-update.1, 2.0.12, 2.0.18, 2.0.19, 2.2.0;
@@ -228,4 +234,10 @@ Expect:
 
 ### Review
 
-Round 1, roster general, effort 3. Counts: bug 1 open, suggestion 2 open, nit 0. Implement-fix-2 fixed M1, M2, M3 (ledger statuses set to fixed); round 2 review pending. Ledger: `review/round-1/merged.md`. Framework: `review/review-framework.md`.
+Rounds: 2. Roster: general. Round 1 effort 3 (branch vs master). Round 2 effort 1 (152-line fix delta; bound turn cap 80; session recorded uncapped because the harness did not pass `--max-turns`).
+
+Round 2 re-checked M1–M3 on `fde535b..35ebe30`. All three are fixed. No new findings. The implementer restatement matches the original task; no misread.
+
+Final counts: bug 0 open / 1 fixed / 0 wontfix; suggestion 0 open / 2 fixed / 0 wontfix; nit 0 open / 0 fixed / 0 wontfix.
+
+Disposition: clean. No wontfix and no escalation. Paths: `review/review-framework.md`, `review/round-2/merged.md`, `review/disposition.md`. Prior ledger (frozen): `review/round-1/merged.md`.
