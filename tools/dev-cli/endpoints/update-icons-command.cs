@@ -77,7 +77,7 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
       int comparison = CompareVersions(currentUpstream, latestUpstream);
       if (comparison == 0)
       {
-        await ReportPublishStateAsync(currentVersion, ct);
+        await ReportPublishStateAsync(currentVersion, aheadOfUpstream: false, ct);
         return Value;
       }
 
@@ -85,7 +85,7 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
       {
         Terminal.WriteLine(
           $"Props pin {currentUpstream} is ahead of the latest heroicons release {latestUpstream}. Nothing to sync; check source/Directory.Build.props.".Yellow());
-        await ReportPublishStateAsync(currentVersion, ct);
+        await ReportPublishStateAsync(currentVersion, aheadOfUpstream: true, ct);
         return Value;
       }
 

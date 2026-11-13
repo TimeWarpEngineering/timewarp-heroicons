@@ -95,8 +95,9 @@ internal sealed partial class UpdateIconsCommand
       return null;
     }
 
-    // Props already match (or lead) upstream. Only "up to date" when nuget.org has the identity.
-    private async Task ReportPublishStateAsync(string currentVersion, CancellationToken ct)
+    // Props already match (or lead) upstream. Only "up to date" when the pin equals upstream and
+    // nuget.org has the identity; a pin ahead of upstream is reported as published, never up to date.
+    private async Task ReportPublishStateAsync(string currentVersion, bool aheadOfUpstream, CancellationToken ct)
     {
       string identity = NuGetIdentity(currentVersion);
       bool? published = await IsPublishedOnNuGetAsync(identity, ct);
@@ -104,7 +105,9 @@ internal sealed partial class UpdateIconsCommand
 
       if (published.Value)
       {
-        Terminal.WriteLine($"Icons are already up to date ({PackageId} {identity} is on nuget.org).".Green());
+        Terminal.WriteLine(aheadOfUpstream
+          ? $"{PackageId} {identity} is on nuget.org; the props pin still leads upstream heroicons.".Yellow()
+          : $"Icons are already up to date ({PackageId} {identity} is on nuget.org).".Green());
         return;
       }
 

@@ -79,6 +79,7 @@ jobs:
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           dotnet run tools/dev-cli/dev.cs -- update-icons --pr --base $env:BASE_BRANCH
+          exit $LASTEXITCODE
 
   ci:
     if: github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && inputs.sync_icons)

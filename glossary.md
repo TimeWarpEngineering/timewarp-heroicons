@@ -9,7 +9,7 @@ When an agent or reviewer has to ask what a term or acronym means, or sees one u
 | Term | Meaning |
 |------|---------|
 | sync PR | The pull request `dev update-icons --pr` opens from branch `sync/heroicons-vX.Y.Z` when upstream heroicons has a newer release. It carries the regenerated icons, the new `<Version>`, and a `releases.md` section. |
-| release pending | `<Version>` in `source/Directory.Build.props` already matches upstream, but that version is not on nuget.org yet. `dev update-icons` exits non-zero until a GitHub release publishes it. |
+| release pending | There is nothing newer upstream to sync (the upstream pin equals the latest heroicons release, including a TW-only prerelease such as `2.2.0-tw.1`, or the pin is ahead of it), but the NuGet identity of `<Version>` in `source/Directory.Build.props` is not on nuget.org yet. `dev update-icons` exits non-zero until a GitHub release publishes it. |
 | upstream pin | The heroicons version a package version tracks: `+metadata` when present, else the version without its prerelease suffix (`2.2.0-tw.1` pins `2.2.0`). |
 | TW-only fix | A package change with no new heroicons release, shipped as a prerelease on the pinned base (`2.2.0-tw.1`). |
 
