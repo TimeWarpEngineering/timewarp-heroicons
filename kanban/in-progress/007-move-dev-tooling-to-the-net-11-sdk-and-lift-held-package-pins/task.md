@@ -56,6 +56,12 @@ Acceptance criteria:
 - 2026-11-13 implement oracle (claude): SDK 11.0.100, pins bumped, dev-cli ported to the
   Nuru 4 / Mediator handler API, `package-pin-currency.hold` removed. Gates green.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session c85193cb-59d5-43cb-8f71-4af128f3cfb7, max-turns 500, Done — 2026-11-13T11:53:17Z
+- Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), session 15a16174-f22d-4fb7-b948-af005341e897, ganda session 508884, max-turns uncapped (review budget turn cap 120), effort 2, roster general, round 1, disposition clean — 2026-11-13
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13T11:59:13Z
+
+## Review
+
+- Round 1: Done
 
 ## Notes
 
@@ -119,3 +125,10 @@ on a task branch; audit passes with `package-pin-currency` PASS; the grep finds 
 ### Follow-ups
 
 - `Scriban` 5.12.0 (tools/transform) has known NU1903/NU1904 vulnerabilities; worth a bump task.
+
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120; this cursor session was uncapped.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 open / 0 fixed / 0 wontfix; nit 0 open / 0 fixed / 0 wontfix.
+- Disposition: clean. No wontfix and no escalation.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
