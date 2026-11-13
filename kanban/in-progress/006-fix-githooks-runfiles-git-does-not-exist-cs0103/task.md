@@ -61,6 +61,9 @@ Acceptance:
 - Implement (2026-11-13): diagnosed, redeployed hooks from ganda templates, boy-scout audit pass,
   filed task 007 for the .NET 11 SDK move.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5), session not reported, max-turns 500, Done — 2026-11-13T10:50:20Z
+- Review round 1 (2026-11-13): general reviewer (grok 4.7, cursor), session not reported, max-turns 120 (cursor uncapped). One open bug (M1). Disposition not written.
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md — 2026-11-13T10:58:23Z
+- Implement-fix-2 (2026-11-13): implementer-claude (claude-opus-5-5) fixed M1 (pwsh exit guard on Sync heroicons); gates green.
 
 ## Results
 
@@ -127,6 +130,37 @@ git commit --allow-empty -m "test: hook smoke"   # in a task worktree, then drop
 Expect: every hook prints `exit=0` and no `error CS0103`. The commit prints no build error.
 The post-commit hook runs `ganda repo attest`. `ganda repo audit` exits 0.
 
+### Review
+
+Round 1 (general, effort 2): one bug, M1, now fixed. Sync heroicons in `.github/workflows/workflow.yml`
+did not pass a native non-zero exit through under `defaults.run.shell: pwsh`. The step now ends with
+`if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }`, the same guard as Run CI Pipeline. Disposition is
+in `review/round-1/merged.md`. Paths: `review/review-framework.md`, `review/round-1/general.md`,
+`review/round-1/merged.md`.
+
+### Fix pass (round 1 → round 2 gates)
+
+| Gate | Command | Result |
+|------|---------|--------|
+| Build | `./bin/dev build` | exit 0, "Build completed successfully!" |
+| Test | `./bin/dev test` | exit 0, "Tests completed successfully!" |
+| Audit | `ganda repo audit` | first run exit 1: `kanban-landed` (task 005's live kitchen differed from origin-home, fixable). Ran `ganda repo audit --fix` (no file changes in this worktree), then reran: exit 0, only `ci-code-coverage` warning (not fixable) |
+
+Validate M1: `grep -n 'LASTEXITCODE' .github/workflows/workflow.yml` shows two guards, one after
+`update-icons` in Sync heroicons and one in Run CI Pipeline.
+
+## Review
+
+- Round 1: M1 fixed in implement-fix-2 (2026-11-13); awaiting round 2
+
 ## Notes
 
 - Use `ganda runfile cache --clear` to force a recompile when testing.
+
+## Learnings
+
+### Misread
+
+The Goal restatement says the hooks should converge on ganda's current attest templates, which call `ganda repo attest` and do not call `ganda memsearch index-repo`. The original requirements say not to drop the memsearch call and, in the same list, that a ganda-managed hook is fixed where ganda generates it or the upstream change is noted, and that `ganda repo audit` stays clean.
+
+Those sentences conflict once `memsearch-scaffold` treats a hook that still contains memsearch as drift. The restatement keeps the template side and does not restate the memsearch sentence. The implementation matches that restatement and the ganda-managed clause: `ganda hooks install attest` deployed the templates, Results records that ganda retired the memsearch call, and audit is recorded clean. Restoring the call would fail the audit requirement, so the mismatch stays a misread and is not an open finding.
