@@ -93,7 +93,22 @@ Acceptance criteria:
 - Implement (ganda task work, Claude Opus 5.5, 2026-11-13): sync → PR flow, lookups, tag guard,
   actions bump, scripts removal, readme. Boy-scout audit fixes listed under Results.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 26e3005a-bcfc-478a-80a6-40bef2cc8043, max-turns 500, Done — 2026-11-13T10:49:58Z
+- Review (ganda task work, general, Grok 4.7, 2026-11-13): round 1, effort 3, roster general. Turn cap uncapped (review budget ladder 200; harness did not pass `--max-turns`). No vendor session id. Restatement matches the task; no misread.
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 200), artifacts general.md, merged.md — 2026-11-13T11:01:54Z
+- Implement-fix-2 (ganda task work, Claude Opus 5.5, 2026-11-13): fixed review round 1 M1–M3
+  (sync step exit code, glossary "release pending", ahead-of-upstream message); gates re-run.
+- Review round 2 (ganda task work, general, Grok 4.7, 2026-11-13): effort 1, roster general.
+  Turn cap uncapped (review budget ladder 80; harness did not pass `--max-turns`). No vendor
+  session id. Restatement matches the task; no misread. Disposition clean.
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session
+  not reported, max-turns uncapped (no --max-turns flag; bound 80), artifacts
+  review/round-2/general.md, review/round-2/merged.md, review/disposition.md — 2026-11-13
 
+## Review
+
+- Round 1: Blocked — open M1, M2, M3
+- Round 1 fix pass (implement-fix-2): M1, M2, M3 fixed; see Results "Review round 1 fixes".
+- Round 2: Done
 ## Notes
 
 - Current state: NuGet versions 1.0.0, 2.0.12-update.1, 2.0.12, 2.0.18, 2.0.19, 2.2.0;
@@ -129,6 +144,18 @@ Acceptance criteria:
   (nothing else referenced them). Readme "Syncing icons and releasing" replaces the old
   PowerShell steps.
 
+### Review round 1 fixes
+
+- M1: sync step in `.github/workflows/workflow.yml` ends with `exit $LASTEXITCODE`, so a
+  failing `update-icons --pr` (release pending, lookup failure, failed `gh pr create`) turns the
+  pwsh step red.
+- M2: `glossary.md` "release pending" now means the props NuGet identity is missing from
+  nuget.org while there is nothing newer upstream (pin equal, including a TW-only prerelease, or
+  pin ahead).
+- M3: `ReportPublishStateAsync(currentVersion, aheadOfUpstream, ct)`; when the pin leads upstream
+  and the identity is published it prints `timewarp-heroicons <ver> is on nuget.org; the props pin
+  still leads upstream heroicons.` instead of "Icons are already up to date".
+
 ### Boy-scout audit fixes
 
 `ganda repo audit --fix`: suppression baseline seeded, gitignore entries (bin/dev, .local/,
@@ -150,11 +177,15 @@ the sample app).
 
 ### Gates
 
-- `./bin/dev build` → Build completed successfully (0 errors; pre-existing warnings: Scriban
-  NU1902/NU1903 advisories in tools/transform, IL2110/IL2111 in sample-app, RS0030 Console).
+Implement-fix-2 (after the round 1 fixes; dev CLI reinstalled once with `self-install`):
+
+- `./bin/dev build` → Build completed successfully (0 errors).
 - `./bin/dev test` → Tests completed successfully (exit 0).
-- `ganda repo audit` → exit 0 (first run failed on pre-existing checks + the line cap; fixed as
-  above and re-run); only warning left is `ci-code-coverage`.
+- `ganda repo audit` → exit 0; only warning is `ci-code-coverage`. A first run reported a
+  transient `kanban-landed` error for task 006's kitchen while its concurrent walk was landing
+  review files; after that walk landed it, the audit re-ran clean (no change on this task).
+
+Initial implement pass: build ok, test ok, audit exit 0 after the boy-scout fixes below.
 
 ### How to validate
 
@@ -167,7 +198,11 @@ GITHUB_TOKEN=bogus ./bin/dev update-icons; echo "exit=$?"
 ./bin/dev workflow --mode release --release-tag v9.9.9; echo "exit=$?"
 env -u GITHUB_REF_NAME ./bin/dev workflow --mode release; echo "exit=$?"
 # release pending: temporarily set <Version>2.2.0-tw.99</Version> in source/Directory.Build.props
+./bin/dev update-icons; echo "exit=$?"
+# pin ahead and published: temporarily set <Version>2.2.0+3.0.0</Version>
 ./bin/dev update-icons; echo "exit=$?"   # then restore the props file
+# workflow exit propagation (pwsh): the sync step ends with `exit $LASTEXITCODE`
+grep -n -A1 'update-icons --pr' .github/workflows/workflow.yml
 ```
 
 Expect:
@@ -177,6 +212,10 @@ Expect:
 - Tag v9.9.9: `Pipeline FAILED - release tag v9.9.9 does not match … <Version> 2.2.0.`, exit 1.
 - No tag: `Pipeline FAILED - release mode needs a release tag …`, exit 1.
 - 2.2.0-tw.99: `Release pending: props say 2.2.0-tw.99 but timewarp-heroicons 2.2.0-tw.99 is not on nuget.org.`, exit 1.
+- 2.2.0+3.0.0: `Props pin 3.0.0 is ahead of the latest heroicons release 2.2.0. …` then
+  `timewarp-heroicons 2.2.0 is on nuget.org; the props pin still leads upstream heroicons.`, exit 0,
+  no "up to date" line.
+- grep shows `exit $LASTEXITCODE` on the line after `update-icons --pr`.
 - In CI: the next weekly `sync-icons` run logs "up to date"; `--pr` is exercised for real on the
   next heroicons release (or by a manual dispatch with `sync_icons`).
 
@@ -192,3 +231,13 @@ Expect:
 - net11 migration (lift the `package-pin-currency.hold` entries) needs its own task.
 - Optional: delete stale origin branches `Cramer/2026-08-12/heroicons-version-match` and
   `Cramer/2026-08-12/sync-heroicons-2.2.0` (not done).
+
+### Review
+
+Rounds: 2. Roster: general. Round 1 effort 3 (branch vs master). Round 2 effort 1 (152-line fix delta; bound turn cap 80; session recorded uncapped because the harness did not pass `--max-turns`).
+
+Round 2 re-checked M1–M3 on `fde535b..35ebe30`. All three are fixed. No new findings. The implementer restatement matches the original task; no misread.
+
+Final counts: bug 0 open / 1 fixed / 0 wontfix; suggestion 0 open / 2 fixed / 0 wontfix; nit 0 open / 0 fixed / 0 wontfix.
+
+Disposition: clean. No wontfix and no escalation. Paths: `review/review-framework.md`, `review/round-2/merged.md`, `review/disposition.md`. Prior ledger (frozen): `review/round-1/merged.md`.
