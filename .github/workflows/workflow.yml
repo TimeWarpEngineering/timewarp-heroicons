@@ -18,7 +18,7 @@ on:
       - 'Directory.Packages.props'
       - 'releases.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 'feature/**']
     paths:
       - 'source/**'
       - 'tests/**'
@@ -44,6 +44,10 @@ on:
         default: merge
   schedule:
     - cron: '0 6 * * 0'
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   sync-icons:
@@ -74,7 +78,7 @@ jobs:
           GH_TOKEN: ${{ secrets.HEROICONS_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          dotnet run tools/dev-cli/dev.cs -- update-icons --pr --base "$BASE_BRANCH"
+          dotnet run tools/dev-cli/dev.cs -- update-icons --pr --base $env:BASE_BRANCH
 
   ci:
     if: github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && inputs.sync_icons)
@@ -103,20 +107,22 @@ jobs:
 
       - name: Trusted publishing probe result
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'probe'
-        run: echo "Trusted publishing OK — OIDC exchange succeeded for this repo + workflow.yml. (A failure of the NuGet login step above means the policy is missing or misconfigured on NuGet.org.)"
+        run: Write-Output "Trusted publishing OK — OIDC exchange succeeded for this repo + workflow.yml. (A failure of the NuGet login step above means the policy is missing or misconfigured on NuGet.org.)"
 
       - name: Run CI Pipeline
         if: github.event_name != 'workflow_dispatch' || inputs.mode != 'probe'
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            dotnet run tools/dev-cli/dev.cs -- workflow --mode release --release-tag "$RELEASE_TAG" --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if ($env:GITHUB_EVENT_NAME -eq 'release') {
+            dotnet run tools/dev-cli/dev.cs -- workflow --mode release --release-tag $env:RELEASE_TAG --api-key $env:NUGET_API_KEY
+          } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
             dotnet run tools/dev-cli/dev.cs -- workflow --mode merge
-          else
+          } else {
             dotnet run tools/dev-cli/dev.cs -- workflow
-          fi
+          }
+          exit $LASTEXITCODE
 
       - name: Upload Artifacts
         if: always()

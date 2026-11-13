@@ -78,7 +78,8 @@ With the PAT the sync PR also triggers the normal CI run.
 **2. Review and merge the PR** like any other change.
 
 **3. Publish with a GitHub release.** Create a release on `master` whose tag is `v` + the props
-`<Version>` (for example `v2.2.0`):
+`<Version>` (for example `v2.2.0`). From a clean, up-to-date `master` checkout, `dev release` does
+this from `source/Directory.Build.props` (`dev release --dry-run` shows what it would create). By hand:
 
 ```console
 gh release create v2.2.0 --target master --title v2.2.0 --notes "Update to heroicons version 2.2.0"

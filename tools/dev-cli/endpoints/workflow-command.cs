@@ -36,7 +36,7 @@ internal sealed class WorkflowCommand : ICommand<Unit>
       Terminal = terminal;
     }
 
-    public async ValueTask<Unit> Handle(WorkflowCommand command, CancellationToken ct)
+    public async Task<Unit> Handle(WorkflowCommand command, CancellationToken ct)
     {
       string? root = Git.FindRoot();
       if (root is null)

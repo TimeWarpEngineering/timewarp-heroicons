@@ -367,3 +367,18 @@ task-work.progress.log
 
 # Mission heartbeat in the claim worktree (local; not product)
 mission.heartbeat
+
+# VS Code settings: Peacock rewrites this file; vscode-window-icon --fix writes it locally (not tracked)
+.vscode/settings.json
+
+# ganda task work walk state (signal logs, walk locks, walk holders) in origin-home
+/.timewarp/signals/
+
+# Per-user tool state (XDG .local/, e.g. gh device-id; local; not product)
+.local/
+# AOT dev CLI (self-install output; local; not product)
+bin/dev
+# AOT dev CLI debug companion (self-install output; local; not product)
+bin/dev.dbg
+# AOT dev CLI on Windows (self-install output; local; not product)
+bin/dev.exe
