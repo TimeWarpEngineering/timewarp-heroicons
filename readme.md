@@ -1,4 +1,4 @@
-[![Dotnet](https://img.shields.io/badge/dotnet-6.0-blue)](https://dotnet.microsoft.com)
+[![Dotnet](https://img.shields.io/badge/dotnet-10.0%20%7C%2011.0-blue)](https://dotnet.microsoft.com)
 [![Stars](https://img.shields.io/github/stars/TimeWarpEngineering/timewarp-heroicons?logo=github)](https://github.com/TimeWarpEngineering/timewarp-heroicons)
 [![Discord](https://img.shields.io/discord/715274085940199487?logo=discord)](https://discord.gg/7F4bS2T)
 [![nuget](https://img.shields.io/nuget/v/timewarp-heroicons?logo=nuget)](https://www.nuget.org/packages/timewarp-heroicons/)
@@ -45,6 +45,15 @@ You can see the latest NuGet packages from the official [TimeWarp NuGet page](ht
 ```console
 dotnet add package timewarp-heroicons
 ```
+
+### Supported frameworks
+
+The package targets `net10.0` and `net11.0`.
+
+| Target framework | Microsoft.AspNetCore.Components.Web dependency |
+|------------------|-----------------------------------------------|
+| `net10.0`        | 10.0.x                                        |
+| `net11.0`        | 11.0.x                                        |
 
 ## License
 
