@@ -37,8 +37,9 @@ target it) or multi-targets.
 ## Notes
 
 - Library consumers on net10.0 must keep working; check before retargeting the package.
-- Groom 2026-11-13: the holds this task deletes only exist on the 006 branch, and 005 also
-  rewrites the pins (Amuru 2.0.0, Amuru.Tools 2.0.0, Nuru/DevCli 3.0.0, Build.Tasks 1.0.2,
-  plus a TimeWarp.SourceGenerators hold for beta.15 needing the net11 compiler). Before
-  starting, re-read `Directory.Packages.props` and the `package-pin-currency.hold` entry on
-  master after 005 and 006 merge, and treat the version list above as stale.
+- Groom 2026-11-13 (updated after merges): 006 was closed as superseded by 005 (PR #22 closed;
+  the hook redeploy shipped in #23), so it is not a predecessor. 005 is merged and set the current
+  baseline on master: Amuru 2.0.0, Amuru.Tools 2.0.0, Nuru/DevCli 3.0.0, Build.Tasks 1.0.2,
+  SourceGenerators 1.0.0-beta.14, with a `package-pin-currency.hold` entry in `.editorconfig`
+  that cites task 005 (not 006). The version list and the "Task 006 held these pins" sentence
+  above are stale: re-read `Directory.Packages.props` and `.editorconfig` on master first.
