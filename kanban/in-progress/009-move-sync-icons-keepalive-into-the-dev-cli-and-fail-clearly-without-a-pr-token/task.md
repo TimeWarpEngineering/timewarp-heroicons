@@ -45,17 +45,113 @@ create secrets or change repo settings.
   secret, with the scopes.
 - `actionlint` clean; `./bin/dev build`, `./bin/dev test`, `ganda repo audit` green.
 
+## Goal (implementer restatement)
+
+Make `sync-icons.yml` a thin trigger again and make the sync PR step fail with an actionable message.
+
+Acceptance:
+
+1. A dev-cli command (`dev workflow-keepalive --workflow <file>`) PUTs
+   `/repos/{GITHUB_REPOSITORY}/actions/workflows/{file}/enable` with `GH_TOKEN`/`GITHUB_TOKEN`.
+   It succeeds on 2xx (204), and on a non-2xx response or a missing repo/token it prints a clear
+   error and exits non-zero.
+2. The `keepalive` job in `sync-icons.yml` stays a separate job with `permissions: actions: write`
+   only. It runs checkout + setup-dotnet + `dotnet run tools/dev-cli/dev.cs -- workflow-keepalive …`
+   and has no inline `gh api`.
+3. `dev update-icons --pr`: when `gh pr create` fails for a permissions reason (403, or "not
+   permitted to create or approve pull requests"), the error names both fixes: a
+   `HEROICONS_SYNC_TOKEN` secret (fine-grained PAT, this repo, contents + pull requests write) or the
+   repo setting. The command exits non-zero. Under Actions without the PAT (YAML sets a
+   `HEROICONS_SYNC_TOKEN_SET` flag), it prints a warning that does not fail the run: a PR opened with
+   `GITHUB_TOKEN` triggers no CI.
+4. The readme section "Syncing icons and releasing" has the one-time `HEROICONS_SYNC_TOKEN` setup
+   with its scopes.
+5. actionlint is clean, and `./bin/dev build`, `./bin/dev test`, and `ganda repo audit` pass.
+
 ## Checklist
 
-- [ ] Keepalive dev-cli command
-- [ ] `sync-icons.yml` keepalive job calls it (no inline logic)
-- [ ] Clear PR-permission failure message + missing-secret warning in `update-icons --pr`
-- [ ] readme one-time setup for `HEROICONS_SYNC_TOKEN`
-- [ ] actionlint / build / test / audit green
+- [x] Keepalive dev-cli command
+- [x] `sync-icons.yml` keepalive job calls it (no inline logic)
+- [x] Clear PR-permission failure message + missing-secret warning in `update-icons --pr`
+- [x] readme one-time setup for `HEROICONS_SYNC_TOKEN`
+- [x] actionlint / build / test / audit green
 
 ## Session
 
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
+- Implemented 2026-11-13 (implement oracle, ganda task work): keepalive command, YAML, PR-permission
+  message and warning, readme. Gates are recorded under ## Results.
+
+## Results
+
+- New `dev workflow-keepalive --workflow <file> [--repo owner/name]`
+  (`tools/dev-cli/endpoints/workflow-keepalive-command.cs`). It sends `PUT /repos/{repo}/actions/workflows/{file}/enable`
+  over `HttpClient`, the same pattern as `update-icons-lookups.cs`. Repo comes from `--repo` or
+  `GITHUB_REPOSITORY`. Token comes from `GH_TOKEN` or `GITHUB_TOKEN`. A missing workflow, repo, or token,
+  or any non-2xx response, prints a single error line with a hint for 401, 403, or 404 and the response
+  body, and exits 1.
+- `sync-icons.yml` `keepalive` job: checkout, then setup-dotnet, then
+  `dotnet run tools/dev-cli/dev.cs -- workflow-keepalive --workflow sync-icons.yml`. There is no inline
+  `gh api`. It is still a separate job. Permissions are `actions: write` plus `contents: read`.
+  `contents: read` is the only addition, because the job now checks out the repo to run the dev-cli.
+- `dev update-icons --pr`:
+  - When `gh pr create` fails and the output contains "not permitted to create or approve pull
+    requests", "Resource not accessible by integration", `HTTP 403`, or `403 Forbidden`, the
+    error names both fixes:
+    1. a `HEROICONS_SYNC_TOKEN` fine-grained PAT, this repo only, Contents and Pull requests read/write
+    2. the repo setting "Allow GitHub Actions to create and approve pull requests", which the
+       org policy may also need to allow
+
+    The command exits 1.
+  - Under Actions (`GITHUB_ACTIONS=true`) with `HEROICONS_SYNC_TOKEN_SET` not `true`, every `--pr`
+    run prints a `::warning::` annotation that does not fail the run. The YAML sets that flag with
+    `${{ secrets.HEROICONS_SYNC_TOKEN != '' }}`.
+- readme "Syncing icons and releasing" has a one-time setup block: create the fine-grained PAT
+  (repo-only, Contents and Pull requests read/write), store it with `gh secret set HEROICONS_SYNC_TOKEN`,
+  and know the fallback behaviour and the renewal note. The keepalive paragraph now names
+  `dev workflow-keepalive`.
+- No secrets were created and no repo or org settings were changed.
+
+### Gates
+
+| Gate | Command | Result |
+|------|---------|--------|
+| build | `./bin/dev build` | pass (0 errors; 37 warnings that were already there) |
+| dev-cli compile | `dotnet run --file tools/dev-cli/dev.cs -- self-install` (once, after the `tools/dev-cli/` change) | pass |
+| actionlint | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -no-color` (v1.7.12) | pass (no findings) |
+| test | `./bin/dev test` | pass |
+| audit | `ganda repo audit` | pass (exit 0). 2 advisory warnings were already there: `ci-code-coverage` (this repo has no unit-test suite to cover) and `vscode-window-icon` (`.vscode/settings.json` is gitignored and local-only). Neither was touched. |
+
+### How to validate
+
+Smoke:
+
+```bash
+dotnet run --file tools/dev-cli/dev.cs -- self-install   # or use ./bin/dev from a fresh install
+./bin/dev workflow-keepalive --help
+env -u GITHUB_REPOSITORY ./bin/dev workflow-keepalive --workflow sync-icons.yml; echo $?
+GH_TOKEN=bogus ./bin/dev workflow-keepalive --workflow sync-icons.yml --repo TimeWarpEngineering/timewarp-heroicons; echo $?
+GITHUB_REPOSITORY=TimeWarpEngineering/timewarp-heroicons GH_TOKEN=$(gh auth token) ./bin/dev workflow-keepalive --workflow sync-icons.yml; echo $?
+GITHUB_TOKEN=$(gh auth token) GITHUB_ACTIONS=true HEROICONS_SYNC_TOKEN_SET=false ./bin/dev update-icons --pr; echo $?
+GITHUB_TOKEN=$(gh auth token) GITHUB_ACTIONS=true HEROICONS_SYNC_TOKEN_SET=true ./bin/dev update-icons --pr; echo $?
+docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -no-color
+```
+
+Expect:
+
+- With no repo set: `Error: workflow keepalive failed: repository not set: ...`, exit 1.
+- With a bogus token: `... returned 401 Unauthorized. The token is invalid or expired. Response: {"message": "Bad credentials" ...}`, exit 1.
+- With a real token: `Workflow sync-icons.yml in TimeWarpEngineering/timewarp-heroicons is enabled; its inactivity timer is reset (204).`, exit 0.
+  `gh workflow list --all` still shows `Sync icons active`. All three were verified 2026-11-13.
+- `update-icons --pr` with `HEROICONS_SYNC_TOKEN_SET=false` prints the `::warning title=HEROICONS_SYNC_TOKEN not set::...`
+  line first, then `Icons are already up to date (timewarp-heroicons 2.2.0 is on nuget.org).`, exit 0.
+  With `=true` there is no warning line.
+- actionlint prints nothing, exit 0.
+- After merge: run Actions → Sync icons → Run workflow. `keepalive` is green with the 204 line. `sync-icons`
+  is green, reports up to date, and shows the missing-secret warning annotation until the owner adds
+  `HEROICONS_SYNC_TOKEN`.
+- Not exercised live: the 403 `gh pr create` message. It needs a newer upstream release, and no
+  real PR was opened.
 
 ## Notes
 

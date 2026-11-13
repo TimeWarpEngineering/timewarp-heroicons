@@ -4,6 +4,11 @@
 #region Design
 // Never pushes to the base branch. The sync branch is bot-owned, so a leftover branch from a
 // closed PR is force-replaced. Bot git identity is set only inside GitHub Actions.
+// A `gh pr create` permission failure (403 / "not permitted to create or approve pull requests")
+// prints both owner fixes: a HEROICONS_SYNC_TOKEN secret or the repo Actions setting. Under
+// Actions, sync-icons.yml sets HEROICONS_SYNC_TOKEN_SET ('true'/'false') because the job cannot
+// tell which token GH_TOKEN holds; without the PAT a warning (not a failure) says the PR would
+// trigger no CI, since events from GITHUB_TOKEN start no workflow runs.
 #endregion
 
 namespace DevCli.Commands;
@@ -60,12 +65,48 @@ internal sealed partial class UpdateIconsCommand
         .CaptureAsync(ct);
       if (!created.Success)
       {
-        Terminal.WriteErrorLine($"Error: gh pr create failed: {created.Combined.Trim()}".Red());
+        string output = created.Combined.Trim();
+        Terminal.WriteErrorLine($"Error: gh pr create failed: {output}".Red());
+        if (IsPullRequestPermissionError(output))
+        {
+          Terminal.WriteErrorLine(
+            $"The token in GH_TOKEN may not open pull requests. The pushed branch {branch} is kept. Fix one of:".Red());
+          Terminal.WriteErrorLine(SyncTokenSetupHint);
+          Terminal.WriteErrorLine(
+            "  2. Settings -> Actions -> General -> Workflow permissions -> enable \"Allow GitHub Actions to create and approve pull requests\" (an org-level policy may also need it).");
+          Terminal.WriteErrorLine("Then re-run the Sync icons workflow.");
+        }
+
         Environment.ExitCode = 1;
         return null;
       }
 
       return created.Stdout.Trim();
+    }
+
+    private const string SyncTokenSetupHint =
+      "  1. Add a HEROICONS_SYNC_TOKEN repository secret: a fine-grained PAT for this repository only, with " +
+      "Contents: read and write and Pull requests: read and write (gh secret set HEROICONS_SYNC_TOKEN). " +
+      "PRs it opens also trigger the normal CI run.";
+
+    // gh reports a 403 as "HTTP 403" or GraphQL "not permitted to create or approve pull requests".
+    private static bool IsPullRequestPermissionError(string output) =>
+      output.Contains("not permitted to create or approve pull requests", StringComparison.OrdinalIgnoreCase)
+      || output.Contains("Resource not accessible by integration", StringComparison.OrdinalIgnoreCase)
+      || output.Contains("HTTP 403", StringComparison.OrdinalIgnoreCase)
+      || output.Contains("403 Forbidden", StringComparison.OrdinalIgnoreCase);
+
+    // Under Actions without the PAT the PR (if allowed at all) is opened by GITHUB_TOKEN and starts no CI.
+    private void WarnWhenSyncTokenMissing()
+    {
+      if (!string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase)) return;
+      if (string.Equals(Environment.GetEnvironmentVariable("HEROICONS_SYNC_TOKEN_SET"), "true", StringComparison.OrdinalIgnoreCase)) return;
+
+      // Plain text: the ::warning:: workflow command must start the line, so no color codes.
+      Terminal.WriteLine(
+        "::warning title=HEROICONS_SYNC_TOKEN not set::No HEROICONS_SYNC_TOKEN secret, so the sync PR uses GITHUB_TOKEN. " +
+        "That needs \"Allow GitHub Actions to create and approve pull requests\" enabled, and a PR opened with GITHUB_TOKEN triggers no CI run. " +
+        "Add a fine-grained PAT for this repository (Contents + Pull requests: read and write) as the HEROICONS_SYNC_TOKEN secret.");
     }
 
     private async Task TryEnableAutoMergeAsync(string repoRoot, string branch, CancellationToken ct)

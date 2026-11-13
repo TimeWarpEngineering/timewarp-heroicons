@@ -4,9 +4,9 @@ name: Sync icons
 # PR (never pushes to master, never publishes). See readme "Syncing icons and releasing".
 #
 # GitHub disables a scheduled workflow after 60 days with no repository activity. Upstream releases
-# are rare, so this repo is often idle that long. The `keepalive` job re-enables this workflow
-# through the REST API on every run; a monthly cadence (< 60 days) keeps resetting the timer
-# without commits on master. It is a separate job so a failing sync does not skip it.
+# are rare, so this repo is often idle that long. The `keepalive` job runs `dev workflow-keepalive`,
+# which re-enables this workflow through the REST API on every run; a monthly cadence (< 60 days)
+# keeps resetting the timer without commits on master. It is a separate job so a failing sync does not skip it.
 #
 # This file holds the only schedule in the repo. workflow.yml (push/PR CI and the release job that
 # nuget.org trusted publishing is bound to) has no schedule, so inactivity never disables it.
@@ -25,17 +25,25 @@ defaults:
 jobs:
   keepalive:
     runs-on: ubuntu-latest
+    # actions: write for the enable call; contents: read only so checkout can fetch the dev-cli.
     permissions:
       actions: write
+      contents: read
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '11.0.x'
+
       - name: Re-enable this workflow (resets the inactivity timer)
-        # `gh workflow enable` only resolves workflows that are already disabled, so call the
-        # endpoint directly: it returns 204 for an active workflow too.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api --method PUT "repos/$env:GITHUB_REPOSITORY/actions/workflows/sync-icons.yml/enable"
+          dotnet run tools/dev-cli/dev.cs -- workflow-keepalive --workflow sync-icons.yml
           exit $LASTEXITCODE
 
   sync-icons:
@@ -57,14 +65,16 @@ jobs:
 
       - name: Sync heroicons (opens a PR when upstream is newer)
         # GITHUB_TOKEN authenticates the upstream release lookup. GH_TOKEN is what `gh pr create`
-        # uses: the workflow token needs "Allow GitHub Actions to create and approve pull requests"
-        # enabled; an optional HEROICONS_SYNC_TOKEN secret (fine-grained PAT, contents + pull
-        # requests write) is used instead when set and also lets the PR trigger the CI job.
+        # uses: the HEROICONS_SYNC_TOKEN secret (fine-grained PAT, contents + pull requests write)
+        # when set, which also lets the PR trigger CI; else the workflow token, which needs "Allow
+        # GitHub Actions to create and approve pull requests". HEROICONS_SYNC_TOKEN_SET tells the
+        # dev-cli which one it got, so it can warn without the PAT and name both fixes on a 403.
         # pwsh does not fail on a native non-zero exit, so pass it through: a failed sync (lookup
         # error, release pending, failed `gh pr create`) makes the run red and emails the owner.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.HEROICONS_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          HEROICONS_SYNC_TOKEN_SET: ${{ secrets.HEROICONS_SYNC_TOKEN != '' }}
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           dotnet run tools/dev-cli/dev.cs -- update-icons --pr --base $env:BASE_BRANCH

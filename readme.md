@@ -73,8 +73,9 @@ You can also run it by hand: **Actions → Sync icons → Run workflow**, or
 
 **The schedule keeps itself alive.** GitHub disables a scheduled workflow after 60 days with no
 repository activity, and heroicons releases are often further apart than that. Each run of
-`sync-icons.yml` has a `keepalive` job that re-enables the workflow through the REST API
-(`PUT /repos/{owner}/{repo}/actions/workflows/sync-icons.yml/enable`, `actions: write` only), which
+`sync-icons.yml` has a `keepalive` job that runs `dev workflow-keepalive --workflow sync-icons.yml`.
+It re-enables the workflow through the REST API
+(`PUT /repos/{owner}/{repo}/actions/workflows/sync-icons.yml/enable`, `actions: write`), which
 resets that timer without committing to `master`. The keepalive is a separate job, so it still runs
 when the sync fails. `workflow.yml` (push/PR CI and the release job) has no schedule, so inactivity
 never disables it. If `gh workflow list --all` ever shows `Sync icons` as `disabled_inactivity`,
@@ -83,10 +84,24 @@ re-enable it once with `gh workflow enable sync-icons.yml`.
 A failed sync (lookup error, release pending, failed `gh pr create`) fails the run, so GitHub emails
 the failed scheduled run to the repository owner.
 
-One-time setup: `gh pr create` in the job needs either
-**Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**, or a
-`HEROICONS_SYNC_TOKEN` repository secret (fine-grained PAT with contents + pull requests write).
-With the PAT the sync PR also triggers the normal CI run.
+**One-time setup: the `HEROICONS_SYNC_TOKEN` secret.** The sync job opens its PR with `gh pr create`.
+Give it a token that may do that:
+
+1. Create a fine-grained personal access token (**Settings → Developer settings → Fine-grained
+   tokens**) with **Repository access: Only select repositories → timewarp-heroicons** and the
+   repository permissions **Contents: Read and write** and **Pull requests: Read and write**.
+2. Store it as a repository secret: `gh secret set HEROICONS_SYNC_TOKEN` (or **Settings → Secrets
+   and variables → Actions → New repository secret**).
+
+A PR opened with this token also triggers the normal CI run. Without it, the job falls back to
+`GITHUB_TOKEN`. That works only when **Settings → Actions → General → Allow GitHub Actions to
+create and approve pull requests** is enabled (an organization policy may also have to allow it),
+and a PR opened with `GITHUB_TOKEN` triggers no CI. Each `--pr` run under Actions without the
+secret logs a warning. When `gh pr create` is refused for permissions, the run fails and the error
+names both fixes. The PAT expires, so renew the secret before its expiry date.
+
+The keepalive job needs no secret: `dev workflow-keepalive` uses the job's `GITHUB_TOKEN` with
+`actions: write` (plus `contents: read` for the checkout of the dev-cli).
 
 **2. Review and merge the PR** like any other change.
 
