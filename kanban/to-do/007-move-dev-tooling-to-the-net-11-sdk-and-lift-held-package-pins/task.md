@@ -18,6 +18,11 @@ dev-cli to the Amuru 3 / Nuru 4 APIs, and deletes the holds. Decide whether the
 published library `source/timewarp-heroicons` stays on `net10.0` (SDK 11 can still
 target it) or multi-targets.
 
+## Depends on
+
+- 005
+- 006
+
 ## Checklist
 
 - [ ] `global.json` → .NET 11 SDK; CI `setup-dotnet` → `11.0.x`
@@ -33,3 +38,8 @@ target it) or multi-targets.
 ## Notes
 
 - Library consumers on net10.0 must keep working; check before retargeting the package.
+- Groom 2026-11-13: the holds this task deletes only exist on the 006 branch, and 005 also
+  rewrites the pins (Amuru 2.0.0, Amuru.Tools 2.0.0, Nuru/DevCli 3.0.0, Build.Tasks 1.0.2,
+  plus a TimeWarp.SourceGenerators hold for beta.15 needing the net11 compiler). Before
+  starting, re-read `Directory.Packages.props` and the `package-pin-currency.hold` entry on
+  master after 005 and 006 merge, and treat the version list above as stale.
