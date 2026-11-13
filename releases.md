@@ -1,5 +1,11 @@
 # Releases
 
+## 2.2.0-tw.1
+
+* Target .NET 11 (`net11.0`) only; depends on Microsoft.AspNetCore.Components.Web 11.0.0.
+* **Breaking:** .NET 10 is no longer supported. Stay on `2.2.0` for `net10.0`.
+* Icons unchanged (heroicons 2.2.0).
+
 ## 2.2.0
 
 * Update to heroicons version 2.2.0
