@@ -63,12 +63,25 @@ Package versions match [heroicons](https://github.com/tailwindlabs/heroicons) re
 (`2.2.0` = heroicons 2.2.0). TW-only fixes use a prerelease on that base (`2.2.0-tw.1`).
 See `releases.md`.
 
-**1. Sync opens a PR.** The weekly `sync-icons` job in `.github/workflows/workflow.yml` runs
-`dev update-icons --pr`. When upstream has a newer release it regenerates the icon components on a
+**1. Sync opens a PR.** The `sync-icons` job in `.github/workflows/sync-icons.yml` runs
+`dev update-icons --pr` on the 1st of each month at 06:00 UTC. When upstream has a newer release it regenerates the icon components on a
 `sync/heroicons-vX.Y.Z` branch, sets `<Version>` in `source/Directory.Build.props`, adds a
 `releases.md` section, builds and tests, then opens a PR into `master`. It never pushes to `master`
 and never publishes. If that sync PR is already open, a later run reports it and opens no duplicate.
-You can also run the job by hand: **Actions → CI/CD → Run workflow** with `sync_icons` checked.
+You can also run it by hand: **Actions → Sync icons → Run workflow**, or
+`gh workflow run sync-icons.yml`.
+
+**The schedule keeps itself alive.** GitHub disables a scheduled workflow after 60 days with no
+repository activity, and heroicons releases are often further apart than that. Each run of
+`sync-icons.yml` has a `keepalive` job that re-enables the workflow through the REST API
+(`PUT /repos/{owner}/{repo}/actions/workflows/sync-icons.yml/enable`, `actions: write` only), which
+resets that timer without committing to `master`. The keepalive is a separate job, so it still runs
+when the sync fails. `workflow.yml` (push/PR CI and the release job) has no schedule, so inactivity
+never disables it. If `gh workflow list --all` ever shows `Sync icons` as `disabled_inactivity`,
+re-enable it once with `gh workflow enable sync-icons.yml`.
+
+A failed sync (lookup error, release pending, failed `gh pr create`) fails the run, so GitHub emails
+the failed scheduled run to the repository owner.
 
 One-time setup: `gh pr create` in the job needs either
 **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**, or a
@@ -89,7 +102,7 @@ The `release` event runs `dev workflow` in release mode. It fails if the tag (mi
 match `<Version>`, then builds, packs, and pushes to nuget.org with OIDC trusted publishing.
 
 **Pending releases are not dropped.** When `<Version>` already matches upstream but that version is
-not on nuget.org, `dev update-icons` prints `Release pending` and exits non-zero, so the weekly run
+not on nuget.org, `dev update-icons` prints `Release pending` and exits non-zero, so the monthly run
 stays red until step 3 is done.
 
 Locally, `dev update-icons` (no `--pr`) checks upstream and nuget.org. When upstream is newer it
