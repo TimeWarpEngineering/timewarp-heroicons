@@ -9,6 +9,19 @@ what I want." Task 011 (PR #28) made the library multi-target `net10.0;net11.0` 
 
 The title still says multi-target; the actual release is **net11.0 only**.
 
+## Goal (implementer restatement)
+
+Ship 2.2.0-tw.1 as a **net11.0-only** package (breaking for .NET 10 consumers, who stay on 2.2.0).
+
+Acceptance:
+- Library csproj uses a single `<TargetFramework>net11.0</TargetFramework>`.
+- `Directory.Packages.props` has one unconditional Components.Web 11.0.0 pin; the net10 pin and comment are gone; `ganda nuget outdated` clean.
+- `tools/transform` targets net11.0; no `net10` left in any csproj/props.
+- `<Version>2.2.0-tw.1</Version>`; `releases.md` has a `## 2.2.0-tw.1` section with the breaking note.
+- readme badge + Supported frameworks say .NET 11 only and point .NET 10 users at 2.2.0.
+- Packed nuspec: version 2.2.0-tw.1, single net11.0 group, Components.Web 11.0.0.
+- build / test / audit green; no tag or GitHub release.
+
 ## Requirements
 
 - `source/timewarp-heroicons/timewarp-heroicons.csproj`: `<TargetFramework>net11.0</TargetFramework>`
@@ -32,19 +45,75 @@ The title still says multi-target; the actual release is **net11.0 only**.
 
 ## Checklist
 
-- [ ] Library net11.0 only
-- [ ] Single Components.Web 11.0.0 pin; `ganda nuget outdated` clean
-- [ ] transform tool net11.0; no net10 left
-- [ ] Version 2.2.0-tw.1 + releases.md section (breaking note)
-- [ ] readme frameworks
-- [ ] nuspec checked
-- [ ] build / test / audit green
+- [x] Library net11.0 only
+- [x] Single Components.Web 11.0.0 pin; `ganda nuget outdated` clean
+- [x] transform tool net11.0; no net10 left
+- [x] Version 2.2.0-tw.1 + releases.md section (breaking note)
+- [x] readme frameworks
+- [x] nuspec checked
+- [x] build / test / audit green
 
 ## Session
 
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session e4799561-1150-46f2-97a1-358f3c48d2fb, max-turns 500, Done — 2026-11-13T15:12:20Z
+- Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), body tw-implementation-review, session not reported, max-turns uncapped (review budget turn cap 80), effort 1, roster general, round 1, disposition clean — 2026-11-13T15:14:54Z
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 80), artifacts general.md, merged.md, disposition.md — 2026-11-13T15:15:22Z
 
+## Review
+
+- Round 1: Done
 ## Notes
 
 - Breaking change to a stable package → walk launched with `--no-merge` (global policy); merge
   with `ganda pr merge --task-id 012`, then `dev release` from clean synced master.
+
+## Results
+
+- Library `source/timewarp-heroicons/timewarp-heroicons.csproj` → `<TargetFramework>net11.0</TargetFramework>`.
+- `Directory.Packages.props`: one unconditional `Microsoft.AspNetCore.Components.Web` 11.0.0; net10 pin and comment removed.
+- `tools/transform/transform.csproj` → net11.0. No `net10` left in any csproj/props.
+- `source/Directory.Build.props` → `<Version>2.2.0-tw.1</Version>`.
+- `releases.md`: new `## 2.2.0-tw.1` section (net11.0 only, breaking note for .NET 10, icons unchanged).
+- `readme.md`: badge says `dotnet 11.0`; Supported frameworks says net11.0 only and sends .NET 10 users to 2.2.0.
+- Packed `timewarp-heroicons.2.2.0-tw.1.nupkg` nuspec: `<version>2.2.0-tw.1</version>`, single
+  `<group targetFramework="net11.0">` with `Microsoft.AspNetCore.Components.Web` 11.0.0.
+- No tag or GitHub release created.
+
+### Gates
+
+| Command | Result |
+|---------|--------|
+| `./bin/dev build` | Pass — 0 errors, 9 warnings (pre-existing TWA0004 / RS0030 / IL211x) |
+| `./bin/dev test` | Pass — "Tests completed successfully!" |
+| `ganda nuget outdated` | Pass — all 11 packages up to date |
+| `./bin/dev check-version` | Pass — 2.2.0-tw.1 is new vs NuGet 2.2.0 |
+| `ganda repo audit` | Pass — 42 passed, 2 advisory warnings (pre-existing `ci-code-coverage`, `vscode-window-icon`); `ganda repo audit --fix` changed nothing |
+
+### How to validate
+
+Smoke:
+
+```bash
+grep -rn net10 --include=*.csproj --include=*.props . | grep -v '/obj/\|/bin/'
+./bin/dev build
+unzip -p source/timewarp-heroicons/bin/Release/timewarp-heroicons.2.2.0-tw.1.nupkg timewarp-heroicons.nuspec | grep -n 'version\|group\|dependency'
+./bin/dev check-version
+```
+
+Expect: the grep prints nothing; build succeeds; the nuspec shows `<version>2.2.0-tw.1</version>`
+and exactly one `<group targetFramework="net11.0">` with Components.Web `11.0.0`; check-version
+reports 2.2.0-tw.1 as new.
+
+### Review
+
+- Round 1, roster general, effort 1. Disposition: **clean**. Final open count: 0.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 / 0 / 0; nit 0 / 0 / 0. No wontfix, no escalation.
+- The implementer restatement matches the original task. No misread.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
+
+## Follow-ups
+
+- Advisory audit warnings `ci-code-coverage` (repo has no test project, only `tests/sample-app`) and
+  `vscode-window-icon` (`.vscode/settings.json` missing) pre-date this task and are not auto-fixable.
+- Breaking change to a stable package: merge via `ganda pr merge --task-id 012`, then `dev release`.
