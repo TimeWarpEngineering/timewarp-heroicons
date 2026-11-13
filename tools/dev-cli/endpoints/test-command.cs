@@ -15,7 +15,7 @@ internal sealed class TestCommand : ICommand<Unit>
   [Option("quiet", "q", Description = "Hide test output unless the command fails")]
   public bool Quiet { get; set; }
 
-  internal sealed class Handler : ICommandHandler<TestCommand, Unit>
+  internal sealed class Handler : IRequestHandler<TestCommand, Unit>
   {
     private readonly ITerminal Terminal;
     private TestCommand Command = null!;
@@ -27,7 +27,7 @@ internal sealed class TestCommand : ICommand<Unit>
       Terminal = terminal;
     }
 
-    public async Task<Unit> Handle(TestCommand command, CancellationToken ct)
+    public async ValueTask<Unit> Handle(TestCommand command, CancellationToken ct)
     {
       Command = command;
       Ct = ct;
