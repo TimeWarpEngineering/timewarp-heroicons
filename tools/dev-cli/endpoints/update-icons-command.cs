@@ -41,7 +41,7 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
   [Option("base", Description = "With --pr: base branch for the sync PR (default: master)")]
   public string? Base { get; set; }
 
-  internal sealed partial class Handler : ICommandHandler<UpdateIconsCommand, Unit>
+  internal sealed partial class Handler : IRequestHandler<UpdateIconsCommand, Unit>
   {
     private const string HeroiconsRepo = "https://github.com/tailwindlabs/heroicons.git";
     private const string LatestReleaseUrl = "https://api.github.com/repos/tailwindlabs/heroicons/releases/latest";
@@ -54,7 +54,7 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
       Terminal = terminal;
     }
 
-    public async Task<Unit> Handle(UpdateIconsCommand command, CancellationToken ct)
+    public async ValueTask<Unit> Handle(UpdateIconsCommand command, CancellationToken ct)
     {
       string? repoRoot = Git.FindRoot();
       if (repoRoot is null)

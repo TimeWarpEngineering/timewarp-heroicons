@@ -25,7 +25,7 @@ internal sealed class WorkflowCommand : ICommand<Unit>
   [Option("release-tag", Description = "Release tag to verify against props <Version> (default: GITHUB_REF_NAME)")]
   public string? ReleaseTag { get; set; }
 
-  internal sealed class Handler : ICommandHandler<WorkflowCommand, Unit>
+  internal sealed class Handler : IRequestHandler<WorkflowCommand, Unit>
   {
     private readonly ITerminal Terminal;
     private string RepoRoot = null!;
@@ -36,7 +36,7 @@ internal sealed class WorkflowCommand : ICommand<Unit>
       Terminal = terminal;
     }
 
-    public async Task<Unit> Handle(WorkflowCommand command, CancellationToken ct)
+    public async ValueTask<Unit> Handle(WorkflowCommand command, CancellationToken ct)
     {
       string? root = Git.FindRoot();
       if (root is null)

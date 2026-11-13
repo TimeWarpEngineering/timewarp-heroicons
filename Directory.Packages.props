@@ -9,10 +9,10 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Scriban" Version="5.12.0" />
-    <PackageVersion Include="TimeWarp.Amuru" Version="2.0.0" />
-    <PackageVersion Include="TimeWarp.Amuru.Tools" Version="2.0.0" />
-    <PackageVersion Include="TimeWarp.Build.Tasks" Version="1.0.2" />
-    <PackageVersion Include="TimeWarp.Nuru" Version="3.0.0" />
-    <PackageVersion Include="TimeWarp.Nuru.DevCli" Version="3.0.0" />
-  <PackageVersion Include="TimeWarp.SourceGenerators" Version="1.0.0-beta.14" /></ItemGroup>
+    <PackageVersion Include="TimeWarp.Amuru" Version="3.0.0-beta.2" />
+    <PackageVersion Include="TimeWarp.Amuru.Tools" Version="3.0.0-beta.2" />
+    <PackageVersion Include="TimeWarp.Build.Tasks" Version="2.0.0" />
+    <PackageVersion Include="TimeWarp.Nuru" Version="4.0.0-beta.12" />
+    <PackageVersion Include="TimeWarp.Nuru.DevCli" Version="4.0.0-beta.12" />
+  <PackageVersion Include="TimeWarp.SourceGenerators" Version="1.0.0-beta.15" /></ItemGroup>
 </Project>
