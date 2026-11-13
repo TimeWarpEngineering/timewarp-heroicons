@@ -57,17 +57,43 @@ Time is of the essence.  Before developing a Pull Request I recommend opening a 
 Please feel free to make suggestions and help out with the [documentation](https://timewarpengineering.github.io/timewarp-heroicons/).
 Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how to write markdown files.
 
-### Steps to publish NuGet package
+### Syncing icons and releasing
 
-* [ ] Clone the [heroicons](https://github.com/tailwindlabs/heroicons) repo.
-* [ ] Set the PowerShell variable `$heroicons` to the path where you cloned the heroicons repo in the above step. (Add `$heroicons = "<PATH where you stored the repp>"` to your profile)
-* [ ] Ensure your copy of the heroicons repo is up to date by running (`update.ps1`).
-* [ ] Set the Version in `timewarp-heroicons/source/timewarp-heroicons/timewarp-heroicons.csproj` to the same version that is in `simple-icons/package.json`.
-* [ ] Transform the cloned [simple-icons](https://github.com/simple-icons/simple-icons) into razor files by running `transform.ps1`.
-* [ ] Run the test app to make sure the icons render properly.
-* [ ] Update `releases.md`.
-* [ ] Commit and push the changes to GitHub.
-* [ ] Tweet to let people know.
+Package versions match [heroicons](https://github.com/tailwindlabs/heroicons) releases
+(`2.2.0` = heroicons 2.2.0). TW-only fixes use a prerelease on that base (`2.2.0-tw.1`).
+See `releases.md`.
+
+**1. Sync opens a PR.** The weekly `sync-icons` job in `.github/workflows/workflow.yml` runs
+`dev update-icons --pr`. When upstream has a newer release it regenerates the icon components on a
+`sync/heroicons-vX.Y.Z` branch, sets `<Version>` in `source/Directory.Build.props`, adds a
+`releases.md` section, builds and tests, then opens a PR into `master`. It never pushes to `master`
+and never publishes. If that sync PR is already open, a later run reports it and opens no duplicate.
+You can also run the job by hand: **Actions → CI/CD → Run workflow** with `sync_icons` checked.
+
+One-time setup: `gh pr create` in the job needs either
+**Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**, or a
+`HEROICONS_SYNC_TOKEN` repository secret (fine-grained PAT with contents + pull requests write).
+With the PAT the sync PR also triggers the normal CI run.
+
+**2. Review and merge the PR** like any other change.
+
+**3. Publish with a GitHub release.** Create a release on `master` whose tag is `v` + the props
+`<Version>` (for example `v2.2.0`):
+
+```console
+gh release create v2.2.0 --target master --title v2.2.0 --notes "Update to heroicons version 2.2.0"
+```
+
+The `release` event runs `dev workflow` in release mode. It fails if the tag (minus `v`) does not
+match `<Version>`, then builds, packs, and pushes to nuget.org with OIDC trusted publishing.
+
+**Pending releases are not dropped.** When `<Version>` already matches upstream but that version is
+not on nuget.org, `dev update-icons` prints `Release pending` and exits non-zero, so the weekly run
+stays red until step 3 is done.
+
+Locally, `dev update-icons` (no `--pr`) checks upstream and nuget.org. When upstream is newer it
+regenerates into the working tree without committing. The lookup sends `GITHUB_TOKEN` or `GH_TOKEN`
+when set, which avoids the anonymous GitHub API rate limit.
 
 ## Contact
 

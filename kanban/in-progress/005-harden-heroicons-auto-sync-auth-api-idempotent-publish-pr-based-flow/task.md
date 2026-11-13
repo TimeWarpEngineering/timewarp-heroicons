@@ -47,6 +47,33 @@ Problems found in review (2026-11-13):
 - Remove `scripts/*.ps1` if nothing references them.
 - Workflow permissions: sync job gets `contents: write` + `pull-requests: write` only.
 
+## Goal (implementer restatement)
+
+Make the weekly heroicons sync safe and boring: it must never push to `master` or publish
+to NuGet itself, and it must never silently lose a pending version.
+
+Acceptance criteria:
+
+- `dev update-icons` sends `GITHUB_TOKEN` (or `GH_TOKEN`) as a bearer token to the GitHub
+  releases API when set. HTTP/network/JSON failures print one clean error and exit non-zero
+  (no unhandled exception / exit 134).
+- `dev update-icons --pr` (used by the sync job) regenerates on a `sync/heroicons-vX.Y.Z`
+  branch, commits icons + props `<Version>` + `releases.md`, pushes that branch, and opens a
+  PR against `master` with `gh pr create`. If an open PR for that branch already exists it
+  reports it and does nothing else (no duplicate PR). Auto-merge is opt-in (`--auto-merge`).
+- `--push`, `--publish`, and `--api-key` are gone; the sync job has no NuGet login and only
+  `contents: write` + `pull-requests: write`.
+- When props already match upstream, the command checks nuget.org: published → "up to date";
+  not published → a clear "release pending" message with the steps, and a non-zero exit so the
+  scheduled run is visibly red. Props ahead of upstream is also reported, not "up to date".
+- `dev workflow` release mode fails unless the release tag (minus `v`) equals props
+  `<Version>` (or its NuGet identity without `+metadata`).
+- `DetermineMode` maps `workflow_dispatch` to Merge, not Release.
+- GitHub actions bumped to Node 24 majors (checkout@v7, setup-dotnet@v6, upload-artifact@v7).
+- `scripts/*.ps1` removed (only the `.sln` solution-items folder and the readme referenced them).
+- Readme documents sync → PR → merge → GitHub release `vX.Y.Z` → `release` event → publish.
+- Build passes; local `dev update-icons` (no `--pr`) reports up to date against 2.2.0.
+
 ## Checklist
 
 - [ ] Authenticated + graceful upstream release lookup
