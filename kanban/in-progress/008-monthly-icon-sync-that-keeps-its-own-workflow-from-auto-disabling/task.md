@@ -68,6 +68,7 @@ Acceptance:
 - Implement (2026-11-13): merged `origin/master` (kanban land commit), split the sync into
   `.github/workflows/sync-icons.yml` with a `keepalive` job, removed schedule/sync job/`sync_icons`
   input from `workflow.yml`, updated readme and glossary.
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 6ff77496-da4d-4a2c-81ea-91b8bb740b0a, max-turns 500, Done — 2026-11-13T12:09:08Z
 
 ## Notes
 
