@@ -81,6 +81,7 @@ Acceptance:
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
 - Implemented 2026-11-13 (implement oracle, ganda task work): keepalive command, YAML, PR-permission
   message and warning, readme. Gates are recorded under ## Results.
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session b3fa260a-f91d-41fe-9212-f092ddcce44a, max-turns 500, Done — 2026-11-13T12:38:28Z
 
 ## Results
 
