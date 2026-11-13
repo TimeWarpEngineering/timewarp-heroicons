@@ -1,8 +1,10 @@
 name: CI/CD
 
 # Thin trigger. The CI/CD pipeline lives in C# — the `dev workflow` command — and is mode-aware:
-# push/PR run clean->build->test; a published release runs clean->build->pack->push (no test gate).
-# A weekly schedule syncs icons from upstream tailwindlabs/heroicons via `dev update-icons`.
+# push/PR run clean->build->test; a published release verifies tag == props <Version>, then runs
+# clean->build->pack->push (no test gate). Publishing happens ONLY on the `release` event.
+# A weekly schedule syncs icons from upstream tailwindlabs/heroicons via `dev update-icons --pr`,
+# which opens a sync PR (never pushes to master, never publishes). See readme "Releasing".
 
 on:
   push:
@@ -16,7 +18,7 @@ on:
       - 'Directory.Packages.props'
       - 'releases.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 'feature/**']
     paths:
       - 'source/**'
       - 'tests/**'
@@ -30,7 +32,7 @@ on:
   workflow_dispatch:
     inputs:
       sync_icons:
-        description: 'Sync icons from upstream heroicons and publish if updated'
+        description: 'Sync icons from upstream heroicons and open a PR if updated (no publish)'
         type: boolean
         default: false
       mode:
@@ -43,34 +45,41 @@ on:
   schedule:
     - cron: '0 6 * * 0'
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   sync-icons:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.sync_icons)
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
-      - name: NuGet login (OIDC Trusted Publishing)
-        id: nuget-login
-        uses: nuget/login@v1
-        with:
-          user: TimeWarp.Enterprises
-
-      - name: Sync heroicons
+      - name: Sync heroicons (opens a PR when upstream is newer)
+        # GITHUB_TOKEN authenticates the upstream release lookup. GH_TOKEN is what `gh pr create`
+        # uses: the workflow token needs "Allow GitHub Actions to create and approve pull requests"
+        # enabled; an optional HEROICONS_SYNC_TOKEN secret (fine-grained PAT, contents + pull
+        # requests write) is used instead when set and also lets the PR trigger the CI job.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.HEROICONS_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          dotnet run tools/dev-cli/dev.cs -- update-icons --push --publish --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          dotnet run tools/dev-cli/dev.cs -- update-icons --pr --base $env:BASE_BRANCH
+          exit $LASTEXITCODE
 
   ci:
     if: github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && inputs.sync_icons)
@@ -81,12 +90,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -99,22 +108,26 @@ jobs:
 
       - name: Trusted publishing probe result
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'probe'
-        run: echo "Trusted publishing OK — OIDC exchange succeeded for this repo + workflow.yml. (A failure of the NuGet login step above means the policy is missing or misconfigured on NuGet.org.)"
+        run: Write-Output "Trusted publishing OK — OIDC exchange succeeded for this repo + workflow.yml. (A failure of the NuGet login step above means the policy is missing or misconfigured on NuGet.org.)"
 
       - name: Run CI Pipeline
         if: github.event_name != 'workflow_dispatch' || inputs.mode != 'probe'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            dotnet run tools/dev-cli/dev.cs -- workflow --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if ($env:GITHUB_EVENT_NAME -eq 'release') {
+            dotnet run tools/dev-cli/dev.cs -- workflow --mode release --release-tag $env:RELEASE_TAG --api-key $env:NUGET_API_KEY
+          } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
             dotnet run tools/dev-cli/dev.cs -- workflow --mode merge
-          else
+          } else {
             dotnet run tools/dev-cli/dev.cs -- workflow
-          fi
+          }
+          exit $LASTEXITCODE
 
       - name: Upload Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Packages-${{ github.run_number }}
           path: artifacts/packages/*.nupkg

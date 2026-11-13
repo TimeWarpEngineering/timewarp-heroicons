@@ -30,7 +30,7 @@ resharper_convert_to_primary_constructor_highlighting = false
 
 # Development files
 [*.{cs,csx,cshtml,csproj,razor,sln,props,targets,json,yml,gitignore,}]
-charset = "utf-8"
+charset = utf-8
 trim_trailing_whitespace = true
 
 #### .NET Coding Conventions ####
@@ -422,3 +422,11 @@ dotnet_diagnostic.TWA002.severity = silent
 
 # IDE0290: Use primary constructor - disabled per project preference
 dotnet_diagnostic.IDE0290.severity = none
+# TW0007 file-level usings (TimeWarp.SourceGenerators)
+dotnet_diagnostic.TW0007.filename = global-usings.cs
+
+[ganda.audit]
+# Newer majors of these pins need the .NET 11 SDK (net11.0-only libs, net11 analyzers, or
+# Build.Tasks 2.x TWBT0001). This repo builds on the .NET 10 SDK (global.json 10.0.x). Each hold
+# is the newest release that builds on net10. Lift them in a net11 migration task.
+package-pin-currency.hold = TimeWarp.Amuru=2.0.0 | newer releases are net11-only | timewarp-heroicons 005, TimeWarp.Amuru.Tools=2.0.0 | newer releases are net11-only | timewarp-heroicons 005, TimeWarp.Nuru=3.0.0 | 4.x is net11-only | timewarp-heroicons 005, TimeWarp.Nuru.DevCli=3.0.0 | 4.x source targets Nuru 4 on net11 | timewarp-heroicons 005, TimeWarp.Build.Tasks=1.0.2 | 2.x requires the .NET 11 SDK | timewarp-heroicons 005, TimeWarp.SourceGenerators=1.0.0-beta.14 | beta.15 analyzers need the net11 compiler | timewarp-heroicons 005

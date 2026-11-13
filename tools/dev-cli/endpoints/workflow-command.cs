@@ -3,8 +3,12 @@
 #endregion
 #region Design
 // PR/merge: clean -> build -> test
-// Release: clean -> build -> pack -> push (no test gate)
-// Auto-detects mode from GITHUB_EVENT_NAME or --mode
+// Release: verify tag == props Version -> clean -> build -> pack -> push (no test gate)
+// Auto-detects mode from GITHUB_EVENT_NAME or --mode. Only the `release` event maps to
+// Release; workflow_dispatch is a normal Merge run (publishing needs a GitHub release).
+// Release tag comes from --release-tag, else GITHUB_REF_NAME; "v" prefix is optional.
+// It must equal props <Version> or its NuGet identity (without +metadata), so a
+// mistyped tag cannot silently ship (or --skip-duplicate silently no-op) another version.
 #endregion
 
 namespace DevCli.Commands;
@@ -18,6 +22,9 @@ internal sealed class WorkflowCommand : ICommand<Unit>
   [Option("api-key", Description = "NuGet API key for publishing (from OIDC Trusted Publishing)")]
   public string? ApiKey { get; set; }
 
+  [Option("release-tag", Description = "Release tag to verify against props <Version> (default: GITHUB_REF_NAME)")]
+  public string? ReleaseTag { get; set; }
+
   internal sealed class Handler : ICommandHandler<WorkflowCommand, Unit>
   {
     private readonly ITerminal Terminal;
@@ -29,7 +36,7 @@ internal sealed class WorkflowCommand : ICommand<Unit>
       Terminal = terminal;
     }
 
-    public async ValueTask<Unit> Handle(WorkflowCommand command, CancellationToken ct)
+    public async Task<Unit> Handle(WorkflowCommand command, CancellationToken ct)
     {
       string? root = Git.FindRoot();
       if (root is null)
@@ -50,6 +57,7 @@ internal sealed class WorkflowCommand : ICommand<Unit>
 
       if (mode == CiMode.Release)
       {
+        if (!VerifyReleaseTag(command.ReleaseTag)) return Value;
         await RunReleaseWorkflowAsync(command.ApiKey, ct);
       }
       else
@@ -79,13 +87,46 @@ internal sealed class WorkflowCommand : ICommand<Unit>
         "pull_request" => CiMode.Pr,
         "push" => CiMode.Merge,
         "release" => CiMode.Release,
-        "workflow_dispatch" => CiMode.Release,
+        "workflow_dispatch" => CiMode.Merge,
         _ => CiMode.Pr
       };
 
       Terminal.WriteLine($"Detected GITHUB_EVENT_NAME: {eventName ?? "(not set)"} -> Mode: {mode}");
       return mode;
     }
+
+    private bool VerifyReleaseTag(string? explicitTag)
+    {
+      string? tag = string.IsNullOrWhiteSpace(explicitTag)
+        ? Environment.GetEnvironmentVariable("GITHUB_REF_NAME")
+        : explicitTag;
+
+      if (string.IsNullOrWhiteSpace(tag))
+      {
+        Terminal.WriteErrorLine("Pipeline FAILED - release mode needs a release tag (--release-tag or GITHUB_REF_NAME).".Red());
+        Environment.ExitCode = 1;
+        return false;
+      }
+
+      string tagVersion = tag.StartsWith('v') ? tag[1..] : tag;
+      string version = ReadPackageVersion();
+      string identity = NuGetIdentity(version);
+
+      if (!string.Equals(tagVersion, version, StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(tagVersion, identity, StringComparison.OrdinalIgnoreCase))
+      {
+        Terminal.WriteErrorLine(
+          $"Pipeline FAILED - release tag {tag} does not match source/Directory.Build.props <Version> {version}.".Red());
+        Terminal.WriteErrorLine($"Tag the release v{identity}, or bump <Version> in a PR first.");
+        Environment.ExitCode = 1;
+        return false;
+      }
+
+      Terminal.WriteLine($"Release tag {tag} matches props version {version}.");
+      return true;
+    }
+
+    private static string NuGetIdentity(string version) => version.Split('+')[0];
 
     private async Task RunPrWorkflowAsync(CancellationToken ct)
     {
@@ -161,7 +202,8 @@ internal sealed class WorkflowCommand : ICommand<Unit>
 
     private async Task<bool> PushAsync(string? apiKey, CancellationToken ct)
     {
-      string version = ReadPackageVersion();
+      // Pack names the file by NuGet identity (+metadata is not in the file name).
+      string version = NuGetIdentity(ReadPackageVersion());
       string packagePath = Path.Combine(RepoRoot, "artifacts", "packages", $"timewarp-heroicons.{version}.nupkg");
 
       if (!File.Exists(packagePath))
