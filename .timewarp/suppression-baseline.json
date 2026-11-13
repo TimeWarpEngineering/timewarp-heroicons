@@ -1,0 +1,68 @@
+{
+  "files": {
+    ".editorconfig": {
+      "CA1034": 1,
+      "IDE0290": 1,
+      "RCS0036": 1,
+      "RCS0051": 1,
+      "RCS0052": 1,
+      "RCS1021": 1,
+      "RCS1045": 1,
+      "RCS1123": 1,
+      "RCS1124": 1,
+      "RCS1139": 1,
+      "RCS1140": 1,
+      "RCS1141": 1,
+      "RCS1142": 1,
+      "RCS1181": 1,
+      "RCS1194": 1,
+      "RCS1238": 1,
+      "RCS9001": 1,
+      "RCS9002": 1,
+      "RCS9003": 1,
+      "TWA002": 1,
+      "ca1308": 1
+    },
+    ".githooks/post-checkout.cs": {
+      "CA2007": 1
+    },
+    ".githooks/post-commit.cs": {
+      "CA2007": 1
+    },
+    ".githooks/post-merge.cs": {
+      "CA2007": 1
+    },
+    ".githooks/pre-commit.cs": {
+      "CA1849": 2,
+      "CA2007": 1,
+      "RS0030": 2
+    },
+    ".githooks/pre-push.cs": {
+      "CA1849": 3,
+      "CA2007": 1,
+      "RS0030": 3
+    },
+    "tools/dev-cli/Directory.Build.props": {
+      "CA1031": 1,
+      "CA1034": 1,
+      "CA1303": 1,
+      "CA1508": 1,
+      "CA1515": 1,
+      "CA1849": 1,
+      "CA2000": 1,
+      "CA2007": 1,
+      "CA2016": 1,
+      "CA5399": 1,
+      "IDE0022": 1,
+      "IDE0046": 1,
+      "IDE0065": 1,
+      "IDE0066": 1,
+      "IDE0078": 1,
+      "IL2026": 1,
+      "IL2104": 1,
+      "IL3050": 1,
+      "IL3053": 1,
+      "RCS1046": 1
+    }
+  }
+}

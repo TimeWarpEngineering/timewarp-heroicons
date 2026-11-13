@@ -1,0 +1,110 @@
+#!/usr/bin/env -S dotnet --
+#:package TimeWarp.Amuru
+#:package TimeWarp.Amuru.Tools
+#:property NoWarn=CA2007;CA1849;RS0030
+#:property RunAnalyzers=false
+
+#region Purpose
+// Stop a push of a local task branch onto master or main from any HEAD, and stop a home-branch update or a mixed tag-and-branch batch while HEAD is master or main.
+// An empty destination list, refs/tags, and refs/ganda stay allowed, so a non-fast-forward error and a claims publish can still surface. git push --no-verify is the escape hatch.
+#endregion
+
+// Refuse pushes that update home branches (master/main) while HEAD is master or main.
+// Allow other dests (feature/*, etc.) so origin-home can publish a missing --into ref.
+// Allow refs/tags/* (release tags) and refs/ganda/* (claims CAS) when every dest is one of those.
+// Mixed tag + branch batches stay refused while HEAD is home.
+// An empty dest list updates no branch. Git omits refs that are already up to date and
+// refs it has already rejected as non-fast-forward, and runs this hook on what remains.
+// Refusing that empty list hides the non-fast-forward error, so the shared claims push
+// (pr merge cleanup and worktree gc) cannot retry while HEAD is master.
+// A branch update lists its dest.
+// Refuse pushing a local task/* branch to a home branch from any HEAD (a task worktree that
+// still tracks origin/<home>). Raw-sha sources (kanban publish merge commit) stay allowed.
+// Commits on master stay blocked by pre-commit. Escape hatch: git push --no-verify
+using TimeWarp.Amuru;
+
+string? root = Git.FindRoot();
+if (root is null)
+{
+  Console.Error.WriteLine("Refusing push: repository root was not found.");
+  return 1;
+}
+
+// stdin: <local ref> <local sha> <remote ref> <remote sha> (one line per dest)
+List<string> remoteRefs = [];
+List<string> taskToHome = [];
+string? line;
+while ((line = Console.In.ReadLine()) is not null)
+{
+  if (string.IsNullOrWhiteSpace(line))
+    continue;
+
+  string[] parts = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+  if (parts.Length >= 3)
+  {
+    remoteRefs.Add(parts[2]);
+    if (parts[0].StartsWith("refs/heads/task/", StringComparison.Ordinal) && IsHomeBranchDest(parts[2]))
+      taskToHome.Add($"{parts[0]["refs/heads/".Length..]} -> {parts[2]["refs/heads/".Length..]}");
+  }
+}
+
+if (taskToHome.Count > 0)
+{
+#pragma warning disable RS0030, CA1849 // hook runfile: stderr to git, no ITerminal host
+  foreach (string push in taskToHome)
+    Console.Error.WriteLine($"Refusing push of task branch to home: {push}.");
+  Console.Error.WriteLine("Task branches publish to origin/<task branch> and land on home via PR.");
+  Console.Error.WriteLine("Fix tracking: ganda repo audit --fix --checks task-branch-upstream, then git push.");
+  Console.Error.WriteLine("Escape hatch (intentional only): git push --no-verify");
+#pragma warning restore RS0030, CA1849
+  return 1;
+}
+
+// Nothing in this push will update a ref. Allow it so git can report
+// "everything up-to-date" or the non-fast-forward rejection it already decided.
+if (remoteRefs.Count == 0)
+{
+  return 0;
+}
+
+if (remoteRefs.All(IsExemptDest))
+{
+  return 0;
+}
+
+CommandOutput revParse = await Shell.Builder("git")
+  .WithArguments("rev-parse", "--abbrev-ref", "HEAD")
+  .WithWorkingDirectory(root)
+  .WithNoValidation()
+  .CaptureAsync();
+
+string branch = revParse.Stdout.Trim();
+if (branch is "master" or "main")
+{
+  bool updatesHome = remoteRefs.Any(IsHomeBranchDest);
+  bool mixesTagAndBranch = remoteRefs.Any(IsTagDest) && remoteRefs.Any(IsBranchDest);
+  if (updatesHome || mixesTagAndBranch)
+  {
+#pragma warning disable RS0030, CA1849 // hook runfile: stderr to git, no ITerminal host
+    Console.Error.WriteLine($"Refusing push while HEAD is '{branch}'.");
+    Console.Error.WriteLine("Do not push from master/main — use a feature worktree/branch (e.g. ganda worktree / task branch).");
+    Console.Error.WriteLine("Escape hatch (intentional only): git push --no-verify");
+#pragma warning restore RS0030, CA1849
+    return 1;
+  }
+}
+
+return 0;
+
+static bool IsExemptDest(string remoteRef) =>
+  IsTagDest(remoteRef)
+  || remoteRef.StartsWith("refs/ganda/", StringComparison.Ordinal);
+
+static bool IsTagDest(string remoteRef) =>
+  remoteRef.StartsWith("refs/tags/", StringComparison.Ordinal);
+
+static bool IsBranchDest(string remoteRef) =>
+  remoteRef.StartsWith("refs/heads/", StringComparison.Ordinal);
+
+static bool IsHomeBranchDest(string remoteRef) =>
+  remoteRef is "refs/heads/master" or "refs/heads/main";

@@ -16,7 +16,7 @@ on:
       - 'Directory.Packages.props'
       - 'releases.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 'feature/**']
     paths:
       - 'source/**'
       - 'tests/**'
@@ -42,6 +42,10 @@ on:
         default: merge
   schedule:
     - cron: '0 6 * * 0'
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   sync-icons:
@@ -104,13 +108,16 @@ jobs:
       - name: Run CI Pipeline
         if: github.event_name != 'workflow_dispatch' || inputs.mode != 'probe'
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
+          if ("${{ github.event_name }}" -eq "release") {
             dotnet run tools/dev-cli/dev.cs -- workflow --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          }
+          elseif ("${{ github.event_name }}" -eq "workflow_dispatch") {
             dotnet run tools/dev-cli/dev.cs -- workflow --mode merge
-          else
+          }
+          else {
             dotnet run tools/dev-cli/dev.cs -- workflow
-          fi
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload Artifacts
         if: always()

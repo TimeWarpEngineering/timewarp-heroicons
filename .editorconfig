@@ -30,7 +30,7 @@ resharper_convert_to_primary_constructor_highlighting = false
 
 # Development files
 [*.{cs,csx,cshtml,csproj,razor,sln,props,targets,json,yml,gitignore,}]
-charset = "utf-8"
+charset = utf-8
 trim_trailing_whitespace = true
 
 #### .NET Coding Conventions ####
@@ -422,3 +422,9 @@ dotnet_diagnostic.TWA002.severity = silent
 
 # IDE0290: Use primary constructor - disabled per project preference
 dotnet_diagnostic.IDE0290.severity = none
+# TW0007 file-level usings (TimeWarp.SourceGenerators)
+dotnet_diagnostic.TW0007.filename = global-usings.cs
+
+[ganda.audit]
+# package-pin-currency.hold: the newer Amuru, Nuru, and Build.Tasks releases need the .NET 11 SDK; this repo is on SDK 10 until task 007.
+package-pin-currency.hold = TimeWarp.Amuru=1.0.0 | 3.x is net11.0-only (NU1202) and the repo is on SDK 10 | timewarp-heroicons 007, TimeWarp.Amuru.Tools=1.0.0-beta.2 | 3.x is net11.0-only (NU1202) and the repo is on SDK 10 | timewarp-heroicons 007, TimeWarp.Nuru=3.0.0-beta.74 | 4.x pairs with net11-only Amuru 3 and the repo is on SDK 10 | timewarp-heroicons 007, TimeWarp.Nuru.DevCli=3.0.0-beta.74 | 4.x pairs with net11-only Amuru 3 and the repo is on SDK 10 | timewarp-heroicons 007, TimeWarp.Build.Tasks=1.0.0 | 2.x requires the .NET 11 SDK (TWBT0001) | timewarp-heroicons 007
