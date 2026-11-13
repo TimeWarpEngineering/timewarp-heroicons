@@ -69,6 +69,13 @@ Acceptance:
   `.github/workflows/sync-icons.yml` with a `keepalive` job, removed schedule/sync job/`sync_icons`
   input from `workflow.yml`, updated readme and glossary.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 6ff77496-da4d-4a2c-81ea-91b8bb740b0a, max-turns 500, Done — 2026-11-13T12:09:08Z
+- Review (2026-11-13): general, effort 2, round 1, disposition clean. Restatement matches the task; no misread. Turn cap 120; this cursor session was uncapped.
+- Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), session d9e423d0-ddff-4630-a684-08cfa8effc99, ganda session 533312, max-turns uncapped (review budget turn cap 120), effort 2, roster general, round 1, disposition clean — 2026-11-13
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13T12:13:55Z
+
+## Review
+
+- Round 1: Done
 
 ## Notes
 
@@ -141,3 +148,10 @@ two `exit $LASTEXITCODE` lines; `workflow.yml` has no schedule or sync job. Afte
 run shows `keepalive` green and `sync-icons` either green ("up to date"/sync PR opened) or red
 only for a real sync failure such as "Release pending". `gh workflow list --all` lists
 `Sync icons` and `CI/CD` as `active`.
+
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120; this cursor session was uncapped.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 open / 0 fixed / 0 wontfix; nit 0 open / 0 fixed / 0 wontfix.
+- Disposition: clean. No wontfix and no escalation. The implementer restatement matches the original task; no misread.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
