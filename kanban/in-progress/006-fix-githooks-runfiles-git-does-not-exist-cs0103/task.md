@@ -60,6 +60,7 @@ Acceptance:
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
 - Implement (2026-11-13): diagnosed, redeployed hooks from ganda templates, boy-scout audit pass,
   filed task 007 for the .NET 11 SDK move.
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5), session not reported, max-turns 500, Done — 2026-11-13T10:50:20Z
 
 ## Results
 
