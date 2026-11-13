@@ -22,17 +22,46 @@ target it) or multi-targets.
 
 - 005
 
+## Goal (implementer restatement)
+
+Move the repo's build tooling to the .NET 11 SDK so the held TimeWarp package pins can move to
+their newest releases, then remove the `package-pin-currency.hold` entry that task 005 left in
+`.editorconfig`.
+
+Acceptance criteria:
+
+- `global.json` pins the .NET 11 SDK (11.0.100, `rollForward: latestFeature`); both CI
+  `setup-dotnet` steps install `11.0.x`.
+- `Directory.Packages.props` pins Amuru 3.0.0-beta.2, Amuru.Tools 3.0.0-beta.2,
+  Nuru 4.0.0-beta.12, Nuru.DevCli 4.0.0-beta.12, Build.Tasks 2.0.0, SourceGenerators 1.0.0-beta.15.
+- The dev-cli (`tools/dev-cli/dev.cs`) compiles and runs on Amuru 3 / Nuru 4 (`./bin/dev` rebuilt
+  via self-install).
+- Every `.githooks/*.cs` runfile compiles and exits 0 on the new pins.
+- The published library `source/timewarp-heroicons` stays on `net10.0` (SDK 11 still targets it),
+  so net10 consumers keep working; the sample app stays on net10.0 too.
+- The `package-pin-currency.hold` entry is gone; `./bin/dev build`, `./bin/dev test`, and
+  `ganda repo audit` pass.
+
 ## Checklist
 
-- [ ] `global.json` → .NET 11 SDK; CI `setup-dotnet` → `11.0.x`
-- [ ] Bump the five held pins; fix dev-cli build breaks (Amuru 3, Nuru 4)
-- [ ] `.githooks/*.cs` runfiles compile and exit 0 on the new pins
-- [ ] Delete the `package-pin-currency.hold` entry from `.editorconfig`
-- [ ] `./bin/dev build`, `./bin/dev test`, `ganda repo audit` clean
+- [x] `global.json` → .NET 11 SDK; CI `setup-dotnet` → `11.0.x`
+- [x] Bump the five held pins; fix dev-cli build breaks (Amuru 3, Nuru 4)
+- [x] `.githooks/*.cs` runfiles compile and exit 0 on the new pins
+- [x] Delete the `package-pin-currency.hold` entry from `.editorconfig`
+- [x] `./bin/dev build`, `./bin/dev test`, `ganda repo audit` clean
 
 ## Session
 
 - Created: 85400 (2026-11-13), filed from task 006 (audit boy-scout pass)
+- 2026-11-13 implement oracle (claude): SDK 11.0.100, pins bumped, dev-cli ported to the
+  Nuru 4 / Mediator handler API, `package-pin-currency.hold` removed. Gates green.
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session c85193cb-59d5-43cb-8f71-4af128f3cfb7, max-turns 500, Done — 2026-11-13T11:53:17Z
+- Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), session 15a16174-f22d-4fb7-b948-af005341e897, ganda session 508884, max-turns uncapped (review budget turn cap 120), effort 2, roster general, round 1, disposition clean — 2026-11-13
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13T11:59:13Z
+
+## Review
+
+- Round 1: Done
 
 ## Notes
 
@@ -43,3 +72,63 @@ target it) or multi-targets.
   SourceGenerators 1.0.0-beta.14, with a `package-pin-currency.hold` entry in `.editorconfig`
   that cites task 005 (not 006). The version list and the "Task 006 held these pins" sentence
   above are stale: re-read `Directory.Packages.props` and `.editorconfig` on master first.
+
+## Results
+
+Changes:
+
+- `global.json`: SDK `10.0.301` → `11.0.100` (`rollForward: latestFeature` kept).
+- `.github/workflows/workflow.yml`: both `setup-dotnet` steps `10.0.x` → `11.0.x`.
+- `Directory.Packages.props`: Amuru 2.0.0 → 3.0.0-beta.2, Amuru.Tools 2.0.0 → 3.0.0-beta.2,
+  Nuru 3.0.0 → 4.0.0-beta.12, Nuru.DevCli 3.0.0 → 4.0.0-beta.12, Build.Tasks 1.0.2 → 2.0.0,
+  SourceGenerators 1.0.0-beta.14 → 1.0.0-beta.15.
+- dev-cli: handlers now implement `IRequestHandler<TCommand, Unit>` and return `ValueTask<Unit>`
+  (Nuru 4 / TimeWarp.Mediator API; `ICommandHandler` is gone); `verify-samples` returns
+  `Unit.ValueTask`. Dropped the `INuGetPackageService` / `IRepoCheckVersionService`
+  registrations from `dev.cs`: those services are gone from Nuru.DevCli 4 (NURU051 on
+  `NuGetPackageService`), and the sibling multiavatar dev-cli on the same pins drops them too.
+- `.editorconfig`: removed the `[ganda.audit]` section holding `package-pin-currency.hold`
+  (its only entry). `package-pin-currency` now passes with no hold.
+- Library decision: `source/timewarp-heroicons` stays `net10.0` (and `tests/sample-app` too).
+  SDK 11 builds net10.0 fine, so net10 consumers are unaffected; only dev tooling moved to net11.
+- `.githooks/*.cs`: no source change needed. All five (post-checkout, post-commit, post-merge,
+  pre-commit, pre-push) compiled on the new pins via `dotnet run --file` and exited 0.
+
+### Gates
+
+- `dotnet run --file tools/dev-cli/dev.cs -- self-install` (rebuild `./bin/dev` after the
+  dev-cli change): success.
+- `./bin/dev build`: exit 0, "Build succeeded". Only warnings are the pre-existing NU1902–NU1904
+  advisories on `Scriban` 5.12.0 in `tools/transform` (pin unchanged by this task) and TWA0038
+  from Nuru.DevCli package content files.
+- `./bin/dev test`: exit 0, "Tests completed successfully!".
+- `ganda repo audit`: exit 0, "Repository passes — 2 advisory (non-blocking) warning(s)":
+  `ci-code-coverage` and `vscode-window-icon` (missing ignored `.vscode/settings.json`), both
+  pre-existing and unrelated to this change. `package-pin-currency` PASS.
+
+### How to validate
+
+Smoke:
+
+```bash
+dotnet --version                       # resolves 11.0.x via global.json
+dotnet run --file tools/dev-cli/dev.cs -- self-install
+./bin/dev build && ./bin/dev test
+GANDA_ATTEST_HOOK=0 dotnet run --file .githooks/pre-commit.cs; echo $?
+ganda repo audit
+grep -n 'package-pin-currency.hold' .editorconfig
+```
+
+Expect: SDK 11.0.x; self-install, build, and test exit 0; the hook prints nothing and exits 0
+on a task branch; audit passes with `package-pin-currency` PASS; the grep finds nothing.
+
+### Follow-ups
+
+- `Scriban` 5.12.0 (tools/transform) has known NU1903/NU1904 vulnerabilities; worth a bump task.
+
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120; this cursor session was uncapped.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 open / 0 fixed / 0 wontfix; nit 0 open / 0 fixed / 0 wontfix.
+- Disposition: clean. No wontfix and no escalation.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
