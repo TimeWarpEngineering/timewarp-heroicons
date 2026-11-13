@@ -8,13 +8,22 @@
 **Reviewer roster:** general
 **Session IDs:** implementer session not reported; review session not reported
 
+## Round 2
+
+**Date:** 2026-11-13
+**Diff scope:** `9df6c36`..`78bf3e6` (since `review/round-1/base.sha`). Product delta is one line in `.github/workflows/workflow.yml` (the M1 `$LASTEXITCODE` guard on Sync heroicons).
+**Plan / brief:** Re-verify M1 against that delta. Recorded fix-pass results cover build, test, audit, and a `LASTEXITCODE` grep.
+**Effort:** 1 (by-diff, 104 lines)
+**Reviewer roster:** general
+**Session IDs:** review session not reported
+
 ## Budget (by-diff)
 
-- Lines changed: 584
-- Effort: 2
+- Lines changed: 104
+- Effort: 1
 - TCB hits: none
 - Roster axes: general
-- Turn cap: 120 (--max-turns; cursor uncapped)
+- Turn cap: 80 (--max-turns; cursor uncapped)
 
 ## Ground rules
 

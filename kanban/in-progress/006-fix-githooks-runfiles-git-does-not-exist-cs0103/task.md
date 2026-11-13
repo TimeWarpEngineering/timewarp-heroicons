@@ -64,6 +64,8 @@ Acceptance:
 - Review round 1 (2026-11-13): general reviewer (grok 4.7, cursor), session not reported, max-turns 120 (cursor uncapped). One open bug (M1). Disposition not written.
 - Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md — 2026-11-13T10:58:23Z
 - Implement-fix-2 (2026-11-13): implementer-claude (claude-opus-5-5) fixed M1 (pwsh exit guard on Sync heroicons); gates green.
+- Review round 2 (2026-11-13): general reviewer (grok 4.7, cursor), session not reported, max-turns uncapped (no --max-turns flag; bound 80). M1 verified fixed. No new findings. Disposition clean.
+- Review oracle round 2: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 80), artifacts review/round-2/general.md, review/round-2/merged.md, review/disposition.md — 2026-11-13T11:02:32Z
 
 ## Results
 
@@ -132,11 +134,15 @@ The post-commit hook runs `ganda repo attest`. `ganda repo audit` exits 0.
 
 ### Review
 
-Round 1 (general, effort 2): one bug, M1, now fixed. Sync heroicons in `.github/workflows/workflow.yml`
-did not pass a native non-zero exit through under `defaults.run.shell: pwsh`. The step now ends with
-`if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }`, the same guard as Run CI Pipeline. Disposition is
-in `review/round-1/merged.md`. Paths: `review/review-framework.md`, `review/round-1/general.md`,
-`review/round-1/merged.md`.
+Round 1 (general, effort 2): one bug, M1. Sync heroicons in `.github/workflows/workflow.yml`
+did not pass a native non-zero exit through under `defaults.run.shell: pwsh`.
+
+Round 2 (general, effort 1): re-reviewed `9df6c36`..`78bf3e6`. M1 is fixed. Sync heroicons ends with
+`if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }`, the same guard as Run CI Pipeline. No new findings.
+Disposition: clean (0 open). Final counts: bug 0 open / 1 fixed / 0 wontfix; suggestion 0; nit 0.
+
+Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`,
+`review/round-2/general.md`, `review/round-2/merged.md`, `review/disposition.md`.
 
 ### Fix pass (round 1 → round 2 gates)
 
@@ -151,8 +157,8 @@ Validate M1: `grep -n 'LASTEXITCODE' .github/workflows/workflow.yml` shows two g
 
 ## Review
 
-- Round 1: M1 fixed in implement-fix-2 (2026-11-13); awaiting round 2
-
+- Round 1: M1 fixed in implement-fix-2 (2026-11-13)
+- Round 2: Done
 ## Notes
 
 - Use `ganda runfile cache --clear` to force a recompile when testing.
