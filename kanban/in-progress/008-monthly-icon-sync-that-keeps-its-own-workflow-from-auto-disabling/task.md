@@ -72,6 +72,7 @@ Acceptance:
 - Review (2026-11-13): general, effort 2, round 1, disposition clean. Restatement matches the task; no misread. Turn cap 120; this cursor session was uncapped.
 - Review oracle: reviewed by reviewer-cursor (cursor, model grok-4.7), session d9e423d0-ddff-4630-a684-08cfa8effc99, ganda session 533312, max-turns uncapped (review budget turn cap 120), effort 2, roster general, round 1, disposition clean — 2026-11-13
 - Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13T12:13:55Z
+- Installed ganda changed during this walk: was 53755096 bytes 8cadae8362001777109f71430d59f6c372c26e23134092fc635b921b629f17bf; now 53775992 bytes 7eaa25de594befcc8c4a0c33da7386f44ba62c4be844156d6bcaeaa3210e499b
 
 ## Review
 
