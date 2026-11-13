@@ -21,7 +21,6 @@ target it) or multi-targets.
 ## Depends on
 
 - 005
-- 006
 
 ## Checklist
 
