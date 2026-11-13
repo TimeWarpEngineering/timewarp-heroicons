@@ -92,6 +92,7 @@ Acceptance criteria:
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
 - Implement (ganda task work, Claude Opus 5.5, 2026-11-13): sync → PR flow, lookups, tag guard,
   actions bump, scripts removal, readme. Boy-scout audit fixes listed under Results.
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 26e3005a-bcfc-478a-80a6-40bef2cc8043, max-turns 500, Done — 2026-11-13T10:49:58Z
 
 ## Notes
 
