@@ -68,6 +68,13 @@ Acceptance:
 
 - Created: 5e680869-5aa9-4ad6-b5cb-007489689241 (2026-11-13)
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 771e57b7-bfcb-4449-9142-e5b1702fe97c, max-turns 500, Done — 2026-11-13T13:59:30Z
+- Review oracle: general (cursor, model grok-4.7), session not reported, effort 2, turn cap 120 (cursor uncapped), disposition clean — 2026-11-13
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13
+- Review oracle: review by reviewer-cursor (cursor, vendor xai, model grok-4.7-high), session not reported, max-turns uncapped (no --max-turns flag; bound 120), artifacts general.md, merged.md, disposition.md — 2026-11-13T14:07:27Z
+
+## Review
+
+- Round 1: Done
 
 ## Notes
 
@@ -131,3 +138,10 @@ unzip -p source/timewarp-heroicons/bin/Release/timewarp-heroicons.2.2.0.nupkg ti
 Expect: the build succeeds and the nupkg has `lib/net10.0` and `lib/net11.0`. The nuspec
 shows two groups: `net10.0` → `Microsoft.AspNetCore.Components.Web` 10.0.15 and `net11.0` →
 11.0.0. Test and verify-samples pass, and `sample-app` builds to `bin/Release/net11.0`.
+
+### Review
+
+- Round 1, roster general, effort 2. Disposition: **clean**. Final open count: 0.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 / 0 / 0; nit 0 / 0 / 0. No wontfix, no escalation.
+- The implementer restatement matches the original task. No misread.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
