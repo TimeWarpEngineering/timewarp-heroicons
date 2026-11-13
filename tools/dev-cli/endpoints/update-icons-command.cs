@@ -64,6 +64,9 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
         return Value;
       }
 
+      // Every scheduled --pr run warns, so the missing PAT shows up before an upstream release needs it.
+      if (command.Pr) WarnWhenSyncTokenMissing();
+
       string propsPath = Path.Combine(repoRoot, "source", "Directory.Build.props");
       string currentVersion = ReadVersion(propsPath);
       string currentUpstream = ExtractUpstreamVersion(currentVersion);
