@@ -183,7 +183,11 @@ internal sealed class WorkflowCommand : ICommand<Unit>
         .WithConfiguration("Release")
         .WithWorkingDirectory(RepoRoot)
         .RunAsync(ct);
-      return ReportFailure(exitCode, "Test");
+      if (!ReportFailure(exitCode, "Test")) return false;
+
+      Terminal.WriteLine("Step: Runfile tests");
+      exitCode = await RunfileTests.RunAsync(RepoRoot, Terminal, ct);
+      return ReportFailure(exitCode, "Runfile tests");
     }
 
     private async Task<bool> PackAsync(CancellationToken ct)

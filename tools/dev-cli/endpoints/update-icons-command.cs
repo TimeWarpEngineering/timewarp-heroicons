@@ -4,11 +4,17 @@
 #region Design
 // Version policy (this package is NOT a normal independent TimeWarp line):
 //   - When we sync to heroicons X.Y.Z, NuGet identity MUST be X.Y.Z (match source).
-//   - TW-only fix without a new heroicons release: SemVer prerelease on that base,
-//     e.g. 2.2.0-tw.1 (historical: 2.0.12-update.1). Never invent a disconnected
-//     patch like 2.0.19 while still on heroicons 2.0.18.
-//   - Optional +metadata may record the pin (2.2.0-tw.1+2.2.0) but + alone cannot
-//     distinguish NuGet packages — only the identity before + ships to nuget.org.
+//   - TW-only fix without a new heroicons release: a fourth part R on that base,
+//     X.Y.Z.R (2.2.0.1, 2.2.0.2), with prereleases X.Y.Z.R-beta.N. NuGet orders
+//     2.2.0 < 2.2.0.1-beta.1 < 2.2.0.1 < 2.2.0.2 < 2.2.1, so a revision sorts after
+//     the upstream release it revises. X.Y.Z.R replaces -tw.N: a prerelease label
+//     sorts before the plain version, so 2.2.0-tw.1 was older than 2.2.0.
+//     Never invent a disconnected patch like 2.0.19 while still on heroicons 2.0.18.
+//   - +metadata cannot distinguish NuGet packages: nuget.org ignores it, so
+//     2.2.0+update.1 is the same identity as 2.2.0.
+//   - The upstream pin is the first three parts (HeroiconsVersion.ExtractUpstream),
+//     so 2.2.0, 2.2.0.1, and 2.2.0.1-beta.1 are all "equal to upstream 2.2.0".
+//   - A sync to a new upstream release writes the plain X.Y.Z (R starts again).
 //
 // Flow: read props Version → extract upstream pin → compare to latest GitHub
 // heroicons release (authenticated with GITHUB_TOKEN / GH_TOKEN when present).
@@ -163,24 +169,8 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
       return version;
     }
 
-    // Upstream pin from Version: prefer +metadata; else strip prerelease (2.2.0-tw.1 → 2.2.0).
-    private static string ExtractUpstreamVersion(string version)
-    {
-      int plus = version.IndexOf('+');
-      if (plus >= 0)
-      {
-        return version[(plus + 1)..];
-      }
-
-      // TW-only re-ship: 2.2.0-tw.1 / 2.0.12-update.1 still track base X.Y.Z
-      int dash = version.IndexOf('-');
-      if (dash >= 0)
-      {
-        return version[..dash];
-      }
-
-      return version;
-    }
+    // Upstream pin from Version: first three parts (2.2.0.1-beta.1 → 2.2.0).
+    private static string ExtractUpstreamVersion(string version) => HeroiconsVersion.ExtractUpstream(version);
 
     // NuGet identity is the version without +metadata (that is what nuget.org stores).
     private static string NuGetIdentity(string version) => version.Split('+')[0];
@@ -196,12 +186,12 @@ internal sealed partial class UpdateIconsCommand : ICommand<Unit>
       return string.CompareOrdinal(left, right);
     }
 
-    // On icon sync, NuGet version = heroicons version (no patch++ drift).
-    // TW-only revisions are not produced here — hand-edit to e.g. 2.2.0-tw.1.
+    // On icon sync, NuGet version = heroicons X.Y.Z with no fourth part (the revision
+    // starts again). TW-only revisions are not produced here — hand-edit to X.Y.Z.R.
     private static string BumpPackageVersion(string currentVersion, string upstreamVersion)
     {
       _ = currentVersion;
-      return upstreamVersion;
+      return HeroiconsVersion.ExtractUpstream(upstreamVersion);
     }
   }
 }
