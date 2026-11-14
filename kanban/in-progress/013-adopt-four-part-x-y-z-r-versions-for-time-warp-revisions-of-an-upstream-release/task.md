@@ -74,6 +74,12 @@ Acceptance:
   behind nuget.org); `ganda repo audit --fix` bumped TimeWarp.Build.Tasks 2.0.1-beta.1,
   TimeWarp.Nuru / Nuru.DevCli 4.0.0-beta.13, TimeWarp.SourceGenerators 1.0.0-beta.16.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 134f3dc8-8da8-4400-9d28-e8984634031a, max-turns 500, Done — 2026-11-14T09:23:07Z
+- Review (2026-11-14): general, effort 2, round 1, M1 open. Restatement matches the task; no misread. Bound turn cap 120; this session recorded the cap as uncapped (no --max-turns flag).
+- Review oracle: reviewed by reviewer-grok (grok, vendor xai, model grok-4.7), body tw-implementation-review, session 01a1d95e-3bd5-79a3-a24e-4a43849c3058, max-turns uncapped (review budget turn cap 120), effort 2, roster general, round 1, open finding M1 — 2026-11-14
+- Review oracle: review by reviewer-grok (grok, vendor xai, model grok-4.7, response model grok-4.7-build), session 01a1d95e-3bd5-79a3-a24e-4a43849c3058, max-turns 120, artifacts general.md, merged.md — 2026-11-14T09:31:46Z
+- 2026-11-14 implement-fix-2 oracle (Claude Opus 5.5): fixed M1 (docs only). `glossary.md`
+  `upstream pin`, `TW-only fix`, and `release pending` now match `HeroiconsVersion.ExtractUpstream`
+  and the `X.Y.Z.R` scheme; `readme.md` contributing paragraph updated. Gates green.
 
 ## Results
 
@@ -107,6 +113,20 @@ Acceptance:
 | Version | `./bin/dev check-version` | pass: "Version in source: 2.2.0.1-beta.1 … Latest NuGet version: 2.2.0 … ✓ new — safe to release" |
 | Release | `./bin/dev release --dry-run` | stops at "release must be cut from master" on the task branch (gh auth and clean-tree guards pass). Code read of Nuru.DevCli 4.0.0-beta.13 `release-guard.cs` / `nuget-version-service.version-comparison.cs`: tag is `v{Version}` string compare, core compare walks every numeric part (4 parts OK), `--prerelease` set from the `-` suffix. Run the dry run from master after merge. |
 
+### Round-1 fix pass (M1)
+
+- `glossary.md`: `upstream pin` = first three numeric parts (fourth part, `-prerelease`, and
+  non-numeric `+metadata` ignored; numeric `+X.Y.Z` still names the pin, `2.0.19+2.0.18` →
+  `2.0.18`). `TW-only fix` = `X.Y.Z.R` / `X.Y.Z.R-beta.N`, `-tw.N` named as the old form.
+  `release pending` example lists `2.2.0.1` and `2.2.0.1-beta.1`.
+- `readme.md`: "Syncing icons and releasing" describes the four-part scheme instead of `-tw.N`.
+
+| Gate (fix pass) | Command | Result |
+|-----------------|---------|--------|
+| Build | `./bin/dev build` | pass, 0 errors |
+| Test | `./bin/dev test` | pass, runfile tests 6/6, "Tests completed successfully!" |
+| Audit | `ganda repo audit` | exit 0: 43 passed, 2 skipped, 1 non-blocking warning (`ci-code-coverage`, pre-existing advisory). The audit ran twice with no edit in between, only to capture the exit code. |
+
 ### How to validate
 
 Smoke:
@@ -118,7 +138,10 @@ dotnet run --file tests/dev-cli/heroicons-version.extract-upstream.cs
 grep '<Version>' source/Directory.Build.props
 ```
 
-Expect: `ExtractUpstream("2.2.0.1-beta.1") == "2.2.0"` and the other 5 cases pass;
+Docs (M1): `grep -n 'upstream pin\|TW-only fix' glossary.md` and `sed -n 66,71p readme.md`.
+
+Expect: glossary and readme describe `X.Y.Z.R` / `X.Y.Z.R-beta.N` and a three-part pin
+matching the test cases below. `ExtractUpstream("2.2.0.1-beta.1") == "2.2.0"` and the other 5 cases pass;
 `check-version` prints `Version in source: 2.2.0.1-beta.1` and "safe to release";
 props shows `<Version>2.2.0.1-beta.1</Version>`. `./bin/dev update-icons` (needs network)
 prints `Current heroicons version: 2.2.0` and takes the "equal to upstream" path, not
@@ -128,6 +151,18 @@ prints `Current heroicons version: 2.2.0` and takes the "equal to upstream" path
 
 - Do not wave this repo until a ganda release contains timewarp-ganda task 641 (see Notes).
 - After merge, `./bin/dev release --dry-run` from master is the remaining live check.
+
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120; this session recorded the cap as uncapped (no --max-turns flag).
+- Counts: bug 1 open / 0 fixed / 0 wontfix; suggestion 0; nit 0. Fix pass: M1 fixed (bug 0 open / 1 fixed).
+- Disposition: not written. M1 is open (`glossary.md` / `readme.md` still describe the `-tw.N` pin). Disposition waits until that finding is fixed or marked wontfix.
+- The implementer restatement matches the original task. No misread under Learnings.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`.
+
+## Review
+
+- Round 1: Blocked — open M1
 
 ## Notes
 

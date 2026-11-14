@@ -66,7 +66,8 @@ Please refer to [Markdown](http://daringfireball.net/projects/markdown/) for how
 ### Syncing icons and releasing
 
 Package versions match [heroicons](https://github.com/tailwindlabs/heroicons) releases
-(`2.2.0` = heroicons 2.2.0). TW-only fixes use a prerelease on that base (`2.2.0-tw.1`).
+(`2.2.0` = heroicons 2.2.0). TW-only fixes add a fourth part on that base (`2.2.0.1`), with
+prereleases `X.Y.Z.R-beta.N` (`2.2.0.1-beta.1`); this replaces the old `-tw.N` suffix.
 See `releases.md`.
 
 **1. Sync opens a PR.** The `sync-icons` job in `.github/workflows/sync-icons.yml` runs
