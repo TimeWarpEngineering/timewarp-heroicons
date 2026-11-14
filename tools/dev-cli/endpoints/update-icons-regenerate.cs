@@ -135,6 +135,7 @@ internal sealed partial class UpdateIconsCommand
         .WithConfiguration("Release")
         .WithWorkingDirectory(repoRoot)
         .RunAsync(ct);
+      if (exitCode == 0) exitCode = await RunfileTests.RunAsync(repoRoot, Terminal, ct);
 
       if (exitCode != 0)
       {

@@ -1,0 +1,25 @@
+<Project>
+  <!-- Jaribu runfile tests for the dev CLI. `dev test` and `dev workflow` run each *.cs here. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Code under test, compiled straight from the dev CLI -->
+    <Compile Include="$(MSBuildThisFileDirectory)../../tools/dev-cli/services/heroicons-version.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TimeWarp.Jaribu" />
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="Shouldly" />
+    <Using Include="TimeWarp.Jaribu" />
+    <Using Include="TimeWarp.Jaribu.TestRunner" Static="true" />
+  </ItemGroup>
+</Project>

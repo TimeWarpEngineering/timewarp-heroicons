@@ -37,6 +37,25 @@ the package goes to that three-part version and the revision starts again.
   `2.2.0.1-beta.1`. A code read on 2026-11-14 says they do (string tag compare,
   no SemVer regex), but it was not run.
 
+## Goal (implementer restatement)
+
+The package's first three version parts must always equal the upstream heroicons
+release. TimeWarp-only re-ships add a fourth part (`X.Y.Z.R`), which NuGet sorts after
+`X.Y.Z` and before `X.Y.(Z+1)`; prereleases of a revision are `X.Y.Z.R-beta.N`.
+
+Acceptance:
+
+- `source/Directory.Build.props` `<Version>` is `2.2.0.1-beta.1`.
+- `update-icons` reads the upstream pin as the first three numeric parts, so
+  `2.2.0`, `2.2.0.1`, and `2.2.0.1-beta.1` all mean heroicons `2.2.0` (equal to
+  upstream, not "ahead").
+- On a new upstream release, `update-icons` writes the plain three-part version.
+- The Design region of `update-icons-command.cs` and `releases.md` describe `X.Y.Z.R`
+  revisions instead of `-tw.N`.
+- Tests cover three-part, four-part, and four-part prerelease inputs, and they run
+  under `./bin/dev test` (and CI's `dev workflow` test step).
+- `./bin/dev check-version` and `./bin/dev release --dry-run` accept `2.2.0.1-beta.1`.
+
 ## Checklist
 
 - [ ] `<Version>` is `2.2.0.1-beta.1`

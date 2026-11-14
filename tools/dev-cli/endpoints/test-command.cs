@@ -2,7 +2,7 @@
 // Run the test suite
 #endregion
 #region Design
-// Executes dotnet test for all tests in the repository
+// Executes dotnet test for the solution, then the Jaribu runfiles in tests/dev-cli
 // Handler stores Command and Ct as fields so private methods are zero-parameter
 // Streams test output via Amuru RunAsync by default; --quiet uses CaptureAsync
 #endregion
@@ -73,13 +73,26 @@ internal sealed class TestCommand : ICommand<Unit>
           return false;
         }
 
-        return true;
+        return await RunfileTestsAsync();
       }
 
       int exitCode = await command.RunAsync(Ct);
       if (exitCode != 0)
       {
         Terminal.WriteErrorLine("Tests failed!".Red());
+        Environment.ExitCode = exitCode;
+        return false;
+      }
+
+      return await RunfileTestsAsync();
+    }
+
+    private async Task<bool> RunfileTestsAsync()
+    {
+      int exitCode = await RunfileTests.RunAsync(RepoRoot, Terminal, Ct);
+      if (exitCode != 0)
+      {
+        Terminal.WriteErrorLine("Runfile tests failed!".Red());
         Environment.ExitCode = exitCode;
         return false;
       }
