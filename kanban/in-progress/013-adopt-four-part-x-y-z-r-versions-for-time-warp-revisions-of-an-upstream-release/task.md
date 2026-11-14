@@ -80,6 +80,9 @@ Acceptance:
 - 2026-11-14 implement-fix-2 oracle (Claude Opus 5.5): fixed M1 (docs only). `glossary.md`
   `upstream pin`, `TW-only fix`, and `release pending` now match `HeroiconsVersion.ExtractUpstream`
   and the `X.Y.Z.R` scheme; `readme.md` contributing paragraph updated. Gates green.
+- Review (2026-11-14): general, effort 1, round 2. M1 verified fixed on `b42cc49..a8fee15`. No new findings. Restatement matches the task; no misread. Bound turn cap 80; this session recorded the cap as uncapped (no --max-turns flag).
+- Review oracle: reviewed by reviewer-grok (grok, vendor xai, model grok-4.7), body tw-implementation-review, session 01a1d967-63a2-7493-9390-ecfaef66ecff, max-turns uncapped (review budget turn cap 80), effort 1, roster general, round 2, disposition clean — 2026-11-14
+- Review oracle: re-verified round 2 by reviewer-grok (grok, vendor xai, model grok-4.7), body tw-implementation-review, session 01a1d9ba-b316-7653-a89a-ca88822f31f1, max-turns uncapped (review budget turn cap 80), effort 1, roster general, round 2, disposition clean — 2026-11-14. Read the fix delta and `HeroiconsVersion.ExtractUpstream` against the glossary examples. No new findings. Restatement matches the task; no misread.
 
 ## Results
 
@@ -154,16 +157,17 @@ prints `Current heroicons version: 2.2.0` and takes the "equal to upstream" path
 
 ### Review
 
-- Round 1. Roster: general. Effort: 2. Turn cap 120; this session recorded the cap as uncapped (no --max-turns flag).
-- Counts: bug 1 open / 0 fixed / 0 wontfix; suggestion 0; nit 0. Fix pass: M1 fixed (bug 0 open / 1 fixed).
-- Disposition: not written. M1 is open (`glossary.md` / `readme.md` still describe the `-tw.N` pin). Disposition waits until that finding is fixed or marked wontfix.
+- Round 1. Roster: general. Effort: 2. Turn cap 120; that session recorded the cap as uncapped (no --max-turns flag). Raised M1 (bug, open): glossary and readme still described the `-tw.N` pin.
+- Round 2. Roster: general. Effort: 1. Turn cap 80; this session recorded the cap as uncapped (no --max-turns flag). Re-read `b42cc49..a8fee15`. Gates were not re-run.
+- Counts (final, round 2): bug 0 open / 1 fixed / 0 wontfix; suggestion 0; nit 0.
+- Disposition: clean. M1 is fixed. No wontfix. No escalation.
 - The implementer restatement matches the original task. No misread under Learnings.
-- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/round-2/general.md`, `review/round-2/merged.md`, `review/disposition.md`.
 
 ## Review
 
 - Round 1: Blocked — open M1
-
+- Round 2: Done
 ## Notes
 
 - Needs a ganda release that contains `timewarp-ganda` task 641 before

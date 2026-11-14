@@ -6,15 +6,19 @@
 **Plan / brief:** Ship TimeWarp-only revisions as `X.Y.Z.R` (`2.2.0.1-beta.1`), and make `update-icons` treat the first three numeric parts as the heroicons pin. See `## Goal (implementer restatement)` in `task.md`.
 **Effort:** 2 (general only)
 **Reviewer roster:** general
-**Session IDs:** review session 01a1d95e-3bd5-79a3-a24e-4a43849c3058 (Grok 4.7, 2026-11-14). Implementer session 134f3dc8-8da8-4400-9d28-e8984634031a.
+**Session IDs:** review session 01a1d95e-3bd5-79a3-a24e-4a43849c3058 (Grok 4.7, 2026-11-14). Implementer session 134f3dc8-8da8-4400-9d28-e8984634031a. Round 2 review session 01a1d967-63a2-7493-9390-ecfaef66ecff (Grok 4.7, 2026-11-14). Round 2 re-verify session 01a1d9ba-b316-7653-a89a-ca88822f31f1 (Grok 4.7, 2026-11-14).
+
+## Round 2 scope
+
+Re-review of the fix delta `b42cc49..a8fee15` (commit `a8fee15`, docs only: `glossary.md` and `readme.md`, plus kitchen). Round 1 files stay frozen. Effort 1, roster general. Bound turn cap 80; this session recorded the cap as uncapped (no `--max-turns` flag).
 
 ## Budget (by-diff)
 
-- Lines changed: 471
-- Effort: 2
+- Lines changed: 115
+- Effort: 1
 - TCB hits: none
 - Roster axes: general
-- Turn cap: 120 (--max-turns; cursor uncapped)
+- Turn cap: 80 (bound review budget; this session has no `--max-turns` flag, so the session line records the cap as uncapped)
 
 ## Ground rules
 
