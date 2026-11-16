@@ -24,6 +24,23 @@ Survey 2026-11-16 for this repo: has a `pull_request` paths filter; `dev workflo
 6. No local copy of the classification rule remains in `tools/dev-cli/`.
 7. `ganda repo audit` passes, including both CI-standard checks from ganda 655.
 
+## Goal (implementer restatement)
+
+Every pull request in this repo must report a `CI` check, and a pull request that touches only non-build
+paths (kanban, documentation, ...) must pass that check quickly without building. To get there:
+
+- `ganda repo audit --fix` runs first and its changes are committed.
+- `TimeWarp.Nuru` and `TimeWarp.Nuru.DevCli` are pinned at `4.0.0-beta.15`.
+- `dev workflow` calls `PullRequestBuildClassifier.DecideAsync` before any build step on non-release runs
+  (the classifier itself builds on every non-`pull_request` event). On skip it prints the classifier's message
+  and exits 0. The release path is unchanged.
+- `workflow.yml` has no `paths` filter on `pull_request`; the `push` filter stays, with a comment saying a
+  kanban-only merge must not rebuild and upload packages.
+- Repo-specific build inputs the default rule would skip are declared in `.timewarp/dev.jsonc` under
+  `pullRequestBuild.buildPaths`: the packed `readme.md` and `assets/logo.png`. No local copy of the rule.
+- Acceptance: `./bin/dev build`, `./bin/dev test`, and `ganda repo audit` (including the two CI-standard
+  checks) pass; this task's pull request shows a `CI` run.
+
 ## Checklist
 
 - [ ] `ganda repo audit --fix` run and committed
