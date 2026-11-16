@@ -51,6 +51,10 @@ paths (kanban, documentation, ...) must pass that check quickly without building
 - [x] `ganda repo audit` clean
 - [ ] This task's pull request shows a `CI` run (record the URL in Results)
 
+## Review
+
+- Round 1: Done
+
 ## Notes
 
 Default branch is `main`. Leave `sync-icons.yml` as it is.
@@ -99,7 +103,18 @@ Expect: `Pull request changes only declared non-build paths. Skipping build and 
 Also expect: `ganda repo audit` passes `workflow-file` and `dev-workflow-classifier`; this task's pull request
 shows a `CI` check even though it is not filtered by paths.
 
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120.
+- Counts (final, round 1): bug 0 open / 0 fixed / 0 wontfix; suggestion 0; nit 0.
+- Disposition: clean. No findings. No wontfix. No escalation.
+- The implementer restatement matches the original task. No misread under Learnings.
+- Gates were not re-run. The implementer `## Results` and `### How to validate` record covers build, self-install, test, audit (`workflow-file`, `dev-workflow-classifier`), and the kanban-only skip smoke.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
+
 ## Session
 
 - Created: 64677b22-d705-4b25-b537-4b53732bcb92 (2026-11-16)
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 4d3701eb-8da6-4253-bf82-a322b9fec426, max-turns 500, Done — 2026-11-16T15:50:12Z
+- Review oracle: grok, session 01a1e50d-5efe-7f40-840c-5d8a2274163f, effort 2, roster general, turn cap 120, Done — 2026-11-16
+- Review oracle: review by reviewer-grok (grok, vendor xai, model grok-4.7, response model grok-4.7-build), session 01a1e50d-5efe-7f40-840c-5d8a2274163f, max-turns 120, artifacts general.md, merged.md, disposition.md — 2026-11-16T15:56:22Z
