@@ -9,6 +9,12 @@
 // Release tag comes from --release-tag, else GITHUB_REF_NAME; "v" prefix is optional.
 // It must equal props <Version> or its NuGet identity (without +metadata), so a
 // mistyped tag cannot silently ship (or --skip-duplicate silently no-op) another version.
+// Before any non-release step, the shared PullRequestBuildClassifier (TimeWarp.Nuru.DevCli)
+// decides whether the run builds. On a pull request that changes only non-build paths
+// (kanban, documentation, ...) it prints its message and the run exits 0. Every other
+// event builds. workflow.yml has no paths filter on pull_request, so every pull request
+// reports CI. Packed files the default rule would skip (readme.md, assets/logo.png) are
+// declared in .timewarp/dev.jsonc under pullRequestBuild.buildPaths. Task 014.
 #endregion
 
 namespace DevCli.Commands;
@@ -62,6 +68,10 @@ internal sealed class WorkflowCommand : ICommand<Unit>
       }
       else
       {
+        PullRequestBuildDecision decision = await PullRequestBuildClassifier.DecideAsync(RepoRoot, ct);
+        Terminal.WriteLine(decision.Message);
+        if (!decision.RequiresBuild) return Value;
+
         await RunPrWorkflowAsync(ct);
       }
 

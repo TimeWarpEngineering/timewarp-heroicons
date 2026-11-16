@@ -9,6 +9,8 @@ name: CI/CD
 on:
   push:
     branches: [ master ]
+    # A kanban-only merge must not rebuild and upload packages, so push keeps a
+    # paths filter. Pull requests do not use one (see below).
     paths:
       - 'source/**'
       - 'tests/**'
@@ -18,15 +20,10 @@ on:
       - 'Directory.Packages.props'
       - 'releases.md'
   pull_request:
+    # No paths filter: every pull request reports CI. dev workflow calls the shared
+    # PullRequestBuildClassifier and skips build and test (exit 0) when the pull
+    # request changes only non-build paths (kanban, documentation, ...).
     branches: [ master, 'feature/**']
-    paths:
-      - 'source/**'
-      - 'tests/**'
-      - 'tools/**'
-      - '.github/workflows/**'
-      - 'Directory.Build.props'
-      - 'Directory.Packages.props'
-      - 'releases.md'
   release:
     types: [published]
   workflow_dispatch:
