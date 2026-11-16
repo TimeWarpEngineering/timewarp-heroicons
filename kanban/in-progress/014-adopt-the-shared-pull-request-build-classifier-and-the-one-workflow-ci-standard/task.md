@@ -24,15 +24,36 @@ Survey 2026-11-16 for this repo: has a `pull_request` paths filter; `dev workflo
 6. No local copy of the classification rule remains in `tools/dev-cli/`.
 7. `ganda repo audit` passes, including both CI-standard checks from ganda 655.
 
+## Goal (implementer restatement)
+
+Every pull request in this repo must report a `CI` check, and a pull request that touches only non-build
+paths (kanban, documentation, ...) must pass that check quickly without building. To get there:
+
+- `ganda repo audit --fix` runs first and its changes are committed.
+- `TimeWarp.Nuru` and `TimeWarp.Nuru.DevCli` are pinned at `4.0.0-beta.15`.
+- `dev workflow` calls `PullRequestBuildClassifier.DecideAsync` before any build step on non-release runs
+  (the classifier itself builds on every non-`pull_request` event). On skip it prints the classifier's message
+  and exits 0. The release path is unchanged.
+- `workflow.yml` has no `paths` filter on `pull_request`; the `push` filter stays, with a comment saying a
+  kanban-only merge must not rebuild and upload packages.
+- Repo-specific build inputs the default rule would skip are declared in `.timewarp/dev.jsonc` under
+  `pullRequestBuild.buildPaths`: the packed `readme.md` and `assets/logo.png`. No local copy of the rule.
+- Acceptance: `./bin/dev build`, `./bin/dev test`, and `ganda repo audit` (including the two CI-standard
+  checks) pass; this task's pull request shows a `CI` run.
+
 ## Checklist
 
-- [ ] `ganda repo audit --fix` run and committed
-- [ ] DevCli pin at 4.0.0-beta.15
-- [ ] `dev workflow` calls the shared classifier on pull requests; skip exits 0 with its message
-- [ ] No `paths` filter on `pull_request`; `push` filter kept with a why comment
-- [ ] Extra build roots (if any) declared through config
-- [ ] `ganda repo audit` clean
+- [x] `ganda repo audit --fix` run and committed
+- [x] DevCli pin at 4.0.0-beta.15
+- [x] `dev workflow` calls the shared classifier on pull requests; skip exits 0 with its message
+- [x] No `paths` filter on `pull_request`; `push` filter kept with a why comment
+- [x] Extra build roots (if any) declared through config
+- [x] `ganda repo audit` clean
 - [ ] This task's pull request shows a `CI` run (record the URL in Results)
+
+## Review
+
+- Round 1: Done
 
 ## Notes
 
@@ -40,6 +61,60 @@ Default branch is `main`. Leave `sync-icons.yml` as it is.
 After merge, the ganda 656 tracker proves a kanban-only pull request here reports `CI` success and merges with
 plain `ganda pr merge` (no `--allow-no-ci`).
 
+## Results
+
+- `ganda repo audit --fix` added `.githooks/prepare-commit-msg` (+ `.cs`); committed as 8eb0892.
+- `Directory.Packages.props`: `TimeWarp.Nuru` and `TimeWarp.Nuru.DevCli` 4.0.0-beta.13 → 4.0.0-beta.15.
+  Boy-scout for `package-pin-currency`: `TimeWarp.Amuru` and `TimeWarp.Amuru.Tools` 3.0.0-beta.2 → 3.0.0-beta.5.
+- `tools/dev-cli/endpoints/workflow-command.cs`: the non-release branch calls
+  `PullRequestBuildClassifier.DecideAsync(RepoRoot, ct)`, prints `decision.Message`, and returns (exit 0) when
+  `RequiresBuild` is false. Release path unchanged. No local copy of the rule.
+- `.github/workflows/workflow.yml`: `pull_request` has no `paths` filter (comment says why); the `push` filter is
+  kept with a comment that a kanban-only merge must not rebuild and upload packages. `sync-icons.yml` untouched.
+- `.timewarp/dev.jsonc` (new): `pullRequestBuild.buildPaths` = `readme.md`, `assets/logo.png` — both are packed
+  into the nupkg by `source/Directory.Build.props`, and the default rule would skip them. No other build roots
+  outside `source`, `tests`, `tools`, `msbuild` (root `Directory.*.props` already build under the default rule).
+- CI run URL: the pull request is opened by the host `open-pr` node after this oracle; record the `CI` run there.
+- Follow-up (not blocking): `ci-code-coverage` audit warning was already present before this task (CI does not
+  collect coverage); left as is.
+
+### Gates
+
+| Command | Result |
+|---|---|
+| `./bin/dev build` | PASS — 0 errors (9 pre-existing warnings) |
+| `dotnet run --file tools/dev-cli/dev.cs -- self-install` (dev-cli changed) | PASS |
+| `./bin/dev test` | PASS — exit 0, all suites green |
+| `ganda repo audit` | PASS — `workflow-file` and `dev-workflow-classifier` pass; 1 advisory warning (`ci-code-coverage`, pre-existing) |
+
+### How to validate
+
+Smoke (skip path, kanban-only diff):
+
+```bash
+b=$(git rev-parse 7e2a1d0^); h=$(git rev-parse 7e2a1d0); d=$(mktemp -d)
+echo "{\"pull_request\":{\"base\":{\"sha\":\"$b\"},\"head\":{\"sha\":\"$h\"}}}" > $d/e.json
+GITHUB_EVENT_NAME=pull_request GITHUB_EVENT_PATH=$d/e.json ./bin/dev workflow; echo EXIT=$?
+```
+
+Expect: `Pull request changes only declared non-build paths. Skipping build and test. ... (1 changed paths)` and
+`EXIT=0`, with no clean/build/test steps. (Observed exactly that on 2026-11-16.)
+
+Also expect: `ganda repo audit` passes `workflow-file` and `dev-workflow-classifier`; this task's pull request
+shows a `CI` check even though it is not filtered by paths.
+
+### Review
+
+- Round 1. Roster: general. Effort: 2. Turn cap 120.
+- Counts (final, round 1): bug 0 open / 0 fixed / 0 wontfix; suggestion 0; nit 0.
+- Disposition: clean. No findings. No wontfix. No escalation.
+- The implementer restatement matches the original task. No misread under Learnings.
+- Gates were not re-run. The implementer `## Results` and `### How to validate` record covers build, self-install, test, audit (`workflow-file`, `dev-workflow-classifier`), and the kanban-only skip smoke.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
+
 ## Session
 
 - Created: 64677b22-d705-4b25-b537-4b53732bcb92 (2026-11-16)
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 4d3701eb-8da6-4253-bf82-a322b9fec426, max-turns 500, Done — 2026-11-16T15:50:12Z
+- Review oracle: grok, session 01a1e50d-5efe-7f40-840c-5d8a2274163f, effort 2, roster general, turn cap 120, Done — 2026-11-16
+- Review oracle: review by reviewer-grok (grok, vendor xai, model grok-4.7, response model grok-4.7-build), session 01a1e50d-5efe-7f40-840c-5d8a2274163f, max-turns 120, artifacts general.md, merged.md, disposition.md — 2026-11-16T15:56:22Z
