@@ -102,3 +102,4 @@ shows a `CI` check even though it is not filtered by paths.
 ## Session
 
 - Created: 64677b22-d705-4b25-b537-4b53732bcb92 (2026-11-16)
+- Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 4d3701eb-8da6-4253-bf82-a322b9fec426, max-turns 500, Done — 2026-11-16T15:50:12Z
