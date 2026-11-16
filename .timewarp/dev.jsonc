@@ -1,0 +1,13 @@
+{
+  // Per-repo configuration for the timewarp-heroicons dev CLI.
+  // Additions to PullRequestBuildClassifier (dev workflow on a pull request).
+  // readme.md and assets/logo.png are packed into the nupkg (source/Directory.Build.props),
+  // so a pull request that touches only them must still build and pack; the defaults
+  // would skip root markdown and assets/**. Task 014.
+  "pullRequestBuild": {
+    "buildPaths": [
+      "readme.md",
+      "assets/logo.png"
+    ]
+  }
+}
