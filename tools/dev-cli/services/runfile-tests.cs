@@ -23,8 +23,8 @@ internal static class RunfileTests
     foreach (string file in Directory.GetFiles(testsDir, "*.cs").Order(StringComparer.Ordinal))
     {
       terminal.WriteLine($"Running runfile tests: {Path.GetRelativePath(repoRoot, file)}");
-      int exitCode = await Shell.Builder("dotnet")
-        .WithArguments("run", "--file", file)
+      int exitCode = await DotNet.Run()
+        .WithFile(file)
         .WithWorkingDirectory(repoRoot)
         .WithNoValidation()
         .RunAsync(ct);
