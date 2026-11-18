@@ -55,8 +55,9 @@ internal sealed partial class UpdateIconsCommand
       }
 
       Terminal.WriteLine("\nRegenerating Blazor icon components...");
-      int exitCode = await Shell.Builder("dotnet")
-        .WithArguments("run", "--project", transformProject, "--", inputPath, outputPath)
+      int exitCode = await DotNet.Run()
+        .WithProject(transformProject)
+        .WithArguments(inputPath, outputPath)
         .WithWorkingDirectory(repoRoot)
         .WithNoValidation()
         .RunAsync(ct);

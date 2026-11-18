@@ -58,8 +58,11 @@ internal sealed partial class UpdateIconsCommand
         $"After merge, publish by creating a GitHub release with tag `v{NuGetIdentity(newVersion)}` on `{baseBranch}` " +
         "(the `release` event runs `dev workflow`, which packs and pushes to nuget.org).";
 
-      CommandOutput created = await Shell.Builder("gh")
-        .WithArguments("pr", "create", "--base", baseBranch, "--head", branch, "--title", title, "--body", body)
+      CommandOutput created = await Gh.Pr().Create()
+        .WithBase(baseBranch)
+        .WithHead(branch)
+        .WithTitle(title)
+        .WithBody(body)
         .WithWorkingDirectory(repoRoot)
         .WithNoValidation()
         .CaptureAsync(ct);
@@ -111,8 +114,9 @@ internal sealed partial class UpdateIconsCommand
 
     private async Task TryEnableAutoMergeAsync(string repoRoot, string branch, CancellationToken ct)
     {
-      CommandOutput merged = await Shell.Builder("gh")
-        .WithArguments("pr", "merge", branch, "--auto", "--merge")
+      CommandOutput merged = await Gh.Pr().Merge(branch)
+        .WithAuto()
+        .WithMergeCommit()
         .WithWorkingDirectory(repoRoot)
         .WithNoValidation()
         .CaptureAsync(ct);
