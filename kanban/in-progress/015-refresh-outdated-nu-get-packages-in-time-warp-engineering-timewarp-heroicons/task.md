@@ -36,6 +36,8 @@ Acceptance criteria:
   `gh pr create --title … --body … --base … --head …`, `gh pr merge <branch> --merge --auto`.
   `<Version>` in `source/Directory.Build.props` is unchanged.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5), session not reported, max-turns 500, Done — 2026-11-18T18:10:43Z
+- Reviewer: grok session 01a1efda-bb67-7053-8699-84dae62f18f1 (2026-11-19), effort 1, roster general, turn cap 80
+- Review oracle: review by reviewer-grok (grok, vendor xai, model grok-4.7, response model grok-4.7-build), session 01a1efda-bb67-7053-8699-84dae62f18f1, max-turns 80, artifacts general.md, merged.md, disposition.md — 2026-11-18T18:16:49Z
 
 ## Results
 
@@ -67,3 +69,15 @@ grep -E 'TimeWarp\.(Amuru|Jaribu|Nuru|SourceGenerators)' Directory.Packages.prop
 Expect: the build succeeds with 0 errors. self-install succeeds with no AMURU0001. The runfile test reports 6/6 passed.
 The grep shows Amuru/Amuru.Tools 3.0.0-beta.10, Jaribu 1.0.0-beta.18, Nuru/Nuru.DevCli 4.0.0-beta.16,
 and SourceGenerators 1.0.0-beta.17.
+
+### Review
+
+- Rounds: 1. Roster: general. Effort: 1.
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0 / 0 / 0; nit 0 / 0 / 0. Final open count: 0.
+- Disposition: clean. No wontfix and no escalation.
+- The goal restatement matches the task. No misread.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
+
+## Review
+
+- Round 1: Done
