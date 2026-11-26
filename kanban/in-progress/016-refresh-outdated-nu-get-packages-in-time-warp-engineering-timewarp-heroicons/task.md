@@ -26,6 +26,8 @@ Acceptance:
 - Implementer: bumped TimeWarp.Nuru and TimeWarp.Nuru.DevCli 4.0.0-beta.16 -> 4.0.0-beta.17 in `Directory.Packages.props`; rebuilt `bin/dev` via self-install.
 - Boy-scout audit fix: `dev-cli-telemetry` (Error, pre-existing) failed; added `.UseTelemetry(options => options.ServiceName = "timewarp-heroicons-dev")` to the `NuruApp.CreateBuilder()` chain in `tools/dev-cli/dev.cs`.
 - Implement oracle: implemented by implementer-claude (claude, vendor anthropic, model claude-opus-5-5, response model claude-opus-5-5), session 61512aa2-26a2-4166-a3c6-bc9069f5bfee, max-turns 500, Done — 2026-11-26T02:42:22Z
+- Review oracle: round 1 general by grok (xAI, Grok 4.7), session 01a215bb-ad5f-7053-950e-0b7b09261a05, max-turns 80, disposition clean — 2026-11-26
+- Review oracle: review by reviewer-grok (grok, vendor xai, model grok-4.7, response model grok-4.7-build), session 01a215bb-ad5f-7053-950e-0b7b09261a05, max-turns 80, artifacts general.md, merged.md, disposition.md — 2026-11-26T02:45:28Z
 
 ## Results
 
@@ -40,7 +42,17 @@ Gates:
 - `dotnet run --file tests/dev-cli/heroicons-version.extract-upstream.cs`: 6/6 passed (no test file added or edited; this is the only test covering dev-cli code).
 - `ganda repo audit`: first run exit 1 (`dev-cli-telemetry` Error); after the fix, exit 0. Remaining warnings, not errors: `ci-code-coverage`, `vscode-window-icon` (pre-existing, left for a separate pass).
 
+Review:
+- Round 1, effort 1, roster general (grok session 01a215bb-ad5f-7053-950e-0b7b09261a05, 2026-11-26).
+- Counts: bug 0 open / 0 fixed / 0 wontfix; suggestion 0; nit 0.
+- Disposition: clean. No wontfix and no escalation. The implementer restatement matches the task; no misread recorded.
+- Paths: `review/review-framework.md`, `review/round-1/general.md`, `review/round-1/merged.md`, `review/disposition.md`.
+
 ### How to validate
 
 Smoke: `dotnet run --file tools/dev-cli/dev.cs -- self-install && ./bin/dev --help && ./bin/dev build`
 Expect: the dev CLI publishes against TimeWarp.Nuru 4.0.0-beta.17, `--help` prints "Development CLI for timewarp-heroicons" with its command list, the build ends with "Build completed successfully!", and `ganda repo audit` exits 0.
+
+## Review
+
+- Round 1: Done
